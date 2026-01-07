@@ -92,3 +92,65 @@ jobs:
             release/gizmosql-ui-macos-arm64
             release/gizmosql-ui-win-x64.exe
             release/checksums.txt
+
+      - name: Update Homebrew formula
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          # Extract version from tag (removes 'v' prefix)
+          VERSION=${GITHUB_REF#refs/tags/v}
+
+          # Get SHA256 of macOS binary
+          SHA256=$(sha256sum release/gizmosql-ui-macos-arm64 | cut -d' ' -f1)
+
+          # Clone the tap repo
+          git clone https://x-access-token:${GH_TOKEN}@github.com/gizmodata/homebrew-tap.git tap
+          cd tap
+
+          # Update the formula
+          cat > Formula/gizmosql-ui.rb << 'FORMULA'
+class GizmosqlUi < Formula
+  desc "Web-based SQL interface for GizmoSQL servers"
+  homepage "https://github.com/gizmodata/gizmosql-ui"
+  version "VERSION_PLACEHOLDER"
+  license "Apache-2.0"
+
+  on_macos do
+    if Hardware::CPU.arm?
+      url "https://github.com/gizmodata/gizmosql-ui/releases/download/v#{version}/gizmosql-ui-macos-arm64"
+      sha256 "SHA256_PLACEHOLDER"
+
+      def install
+        bin.install "gizmosql-ui-macos-arm64" => "gizmosql-ui"
+      end
+    end
+  end
+
+  def caveats
+    <<~EOS
+      GizmoSQL UI starts a local web server and opens your browser.
+
+      To start GizmoSQL UI:
+        gizmosql-ui
+
+      The server runs at http://localhost:4821 by default.
+      Set PORT environment variable to use a different port.
+    EOS
+  end
+
+  test do
+    assert_match "GizmoSQL", shell_output("#{bin}/gizmosql-ui --help 2>&1", 1)
+  end
+end
+FORMULA
+
+          # Replace placeholders with actual values
+          sed -i "s/VERSION_PLACEHOLDER/${VERSION}/g" Formula/gizmosql-ui.rb
+          sed -i "s/SHA256_PLACEHOLDER/${SHA256}/g" Formula/gizmosql-ui.rb
+
+          # Commit and push
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/gizmosql-ui.rb
+          git commit -m "Update gizmosql-ui to ${VERSION}"
+          git push
