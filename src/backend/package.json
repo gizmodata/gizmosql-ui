@@ -1,6 +1,6 @@
 {
   "name": "gizmosql-ui-backend",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "GizmoSQL UI Backend Server",
   "main": "dist/index.js",
   "type": "module",

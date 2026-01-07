@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import { apiRouter } from './routes/api.js';
 import { getStaticPath } from './utils/paths.js';
 import { openBrowser } from './utils/browser.js';
+import { VERSION } from './version.js';
 
 // Handle both ESM and CJS contexts
 // Note: In CJS bundle, esbuild's banner provides __import_meta_url
@@ -35,6 +36,8 @@ app.get('*', (req, res) => {
 // Start server
 app.listen(PORT, () => {
   const url = `http://localhost:${PORT}`;
+  const versionText = `GizmoSQL UI v${VERSION}`;
+  const versionLine = versionText.padStart(37 + Math.floor(versionText.length / 2)).padEnd(74);
   console.log(`
 ╔══════════════════════════════════════════════════════════════════════════╗
 ║                                                                          ║
@@ -45,7 +48,7 @@ app.listen(PORT, () => {
 ║   ╚██████╔╝██║███████╗██║ ╚═╝ ██║╚██████╔╝███████║╚██████╔╝███████╗      ║
 ║    ╚═════╝ ╚═╝╚══════╝╚═╝     ╚═╝ ╚═════╝ ╚══════╝ ╚══▀▀═╝ ╚══════╝      ║
 ║                                                                          ║
-║                           GizmoSQL UI v1.0.0                             ║
+║${versionLine}║
 ║                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════╝
 

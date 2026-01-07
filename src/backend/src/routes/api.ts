@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { GizmoSQLService } from '../services/gizmosql.js';
+import { VERSION } from '../version.js';
 
 export const apiRouter = Router();
 
@@ -8,7 +9,7 @@ const connections = new Map<string, GizmoSQLService>();
 
 // Health check
 apiRouter.get('/health', (req: Request, res: Response) => {
-  res.json({ status: 'ok', version: '1.0.0' });
+  res.json({ status: 'ok', version: VERSION });
 });
 
 // Connect to GizmoSQL server

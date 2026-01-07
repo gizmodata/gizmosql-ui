@@ -1,6 +1,6 @@
 {
   "name": "gizmosql-ui",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "GizmoSQL UI - A web-based SQL interface for GizmoSQL servers",
   "type": "module",
   "main": "dist/backend/src/index.js",
