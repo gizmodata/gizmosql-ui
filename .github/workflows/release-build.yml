@@ -112,46 +112,41 @@ jobs:
           git clone https://x-access-token:${GH_TOKEN}@github.com/gizmodata/homebrew-tap.git tap
           cd tap
 
-          # Update the formula
-          cat > Formula/gizmosql-ui.rb << 'FORMULA'
-class GizmosqlUi < Formula
-  desc "Web-based SQL interface for GizmoSQL servers"
-  homepage "https://github.com/gizmodata/gizmosql-ui"
-  version "VERSION_PLACEHOLDER"
-  license "Apache-2.0"
-
-  on_macos do
-    if Hardware::CPU.arm?
-      url "https://github.com/gizmodata/gizmosql-ui/releases/download/v#{version}/gizmosql-ui-macos-arm64"
-      sha256 "SHA256_PLACEHOLDER"
-
-      def install
-        bin.install "gizmosql-ui-macos-arm64" => "gizmosql-ui"
-      end
-    end
-  end
-
-  def caveats
-    <<~EOS
-      GizmoSQL UI starts a local web server and opens your browser.
-
-      To start GizmoSQL UI:
-        gizmosql-ui
-
-      The server runs at http://localhost:4821 by default.
-      Set PORT environment variable to use a different port.
-    EOS
-  end
-
-  test do
-    assert_match "GizmoSQL", shell_output("#{bin}/gizmosql-ui --help 2>&1", 1)
-  end
-end
-FORMULA
-
-          # Replace placeholders with actual values
-          sed -i "s/VERSION_PLACEHOLDER/${VERSION}/g" Formula/gizmosql-ui.rb
-          sed -i "s/SHA256_PLACEHOLDER/${SHA256}/g" Formula/gizmosql-ui.rb
+          # Update the formula using printf to avoid heredoc issues
+          printf '%s\n' \
+            'class GizmosqlUi < Formula' \
+            '  desc "Web-based SQL interface for GizmoSQL servers"' \
+            '  homepage "https://github.com/gizmodata/gizmosql-ui"' \
+            "  version \"${VERSION}\"" \
+            '  license "Apache-2.0"' \
+            '' \
+            '  on_macos do' \
+            '    if Hardware::CPU.arm?' \
+            "      url \"https://github.com/gizmodata/gizmosql-ui/releases/download/v#{version}/gizmosql-ui-macos-arm64\"" \
+            "      sha256 \"${SHA256}\"" \
+            '' \
+            '      def install' \
+            '        bin.install "gizmosql-ui-macos-arm64" => "gizmosql-ui"' \
+            '      end' \
+            '    end' \
+            '  end' \
+            '' \
+            '  def caveats' \
+            '    <<~EOS' \
+            '      GizmoSQL UI starts a local web server and opens your browser.' \
+            '' \
+            '      To start GizmoSQL UI:' \
+            '        gizmosql-ui' \
+            '' \
+            '      The server runs at http://localhost:4821 by default.' \
+            '      Set PORT environment variable to use a different port.' \
+            '    EOS' \
+            '  end' \
+            '' \
+            '  test do' \
+            '    assert_match "GizmoSQL", shell_output("#{bin}/gizmosql-ui --help 2>&1", 1)' \
+            '  end' \
+            'end' > Formula/gizmosql-ui.rb
 
           # Commit and push
           git config user.name "github-actions[bot]"
