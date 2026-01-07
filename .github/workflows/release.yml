@@ -21,9 +21,6 @@ jobs:
           - os: macos-latest
             target: node20-macos-arm64
             artifact: gizmosql-ui-macos-arm64
-          - os: macos-13
-            target: node20-macos-x64
-            artifact: gizmosql-ui-macos-x64
           - os: windows-latest
             target: node20-win-x64
             artifact: gizmosql-ui-win-x64.exe
@@ -82,7 +79,6 @@ jobs:
           mkdir -p release
           cp artifacts/gizmosql-ui-linux-x64/gizmosql-ui-linux-x64 release/
           cp artifacts/gizmosql-ui-macos-arm64/gizmosql-ui-macos-arm64 release/
-          cp artifacts/gizmosql-ui-macos-x64/gizmosql-ui-macos-x64 release/
           cp artifacts/gizmosql-ui-win-x64.exe/gizmosql-ui-win-x64.exe release/
           cd release
           sha256sum * > checksums.txt || shasum -a 256 * > checksums.txt
@@ -94,6 +90,5 @@ jobs:
           files: |
             release/gizmosql-ui-linux-x64
             release/gizmosql-ui-macos-arm64
-            release/gizmosql-ui-macos-x64
             release/gizmosql-ui-win-x64.exe
             release/checksums.txt
