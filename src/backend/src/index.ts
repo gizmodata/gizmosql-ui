@@ -3,9 +3,9 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import open from 'open';
 import { apiRouter } from './routes/api.js';
 import { getStaticPath } from './utils/paths.js';
+import { openBrowser } from './utils/browser.js';
 
 // Handle both ESM and CJS contexts
 // Note: In CJS bundle, esbuild's banner provides __import_meta_url
@@ -36,18 +36,18 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   const url = `http://localhost:${PORT}`;
   console.log(`
-╔═════════════════════════════════════════════════════════════════════╗
-║                                                                     ║
-║   ██████╗ ██╗███████╗███╗   ███╗ ██████╗ ███████╗ ██████╗ ██╗      ║
-║  ██╔════╝ ██║╚══███╔╝████╗ ████║██╔═══██╗██╔════╝██╔═══██╗██║      ║
-║  ██║  ███╗██║  ███╔╝ ██╔████╔██║██║   ██║███████╗██║   ██║██║      ║
-║  ██║   ██║██║ ███╔╝  ██║╚██╔╝██║██║   ██║╚════██║██║▄▄ ██║██║      ║
-║  ╚██████╔╝██║███████╗██║ ╚═╝ ██║╚██████╔╝███████║╚██████╔╝███████╗ ║
-║   ╚═════╝ ╚═╝╚══════╝╚═╝     ╚═╝ ╚═════╝ ╚══════╝ ╚══▀▀═╝ ╚══════╝ ║
-║                                                                     ║
-║                         GizmoSQL UI v1.0.0                          ║
-║                                                                     ║
-╚═════════════════════════════════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════════════════════╗
+║                                                                          ║
+║    ██████╗ ██╗███████╗███╗   ███╗ ██████╗ ███████╗ ██████╗ ██╗           ║
+║   ██╔════╝ ██║╚══███╔╝████╗ ████║██╔═══██╗██╔════╝██╔═══██╗██║           ║
+║   ██║  ███╗██║  ███╔╝ ██╔████╔██║██║   ██║███████╗██║   ██║██║           ║
+║   ██║   ██║██║ ███╔╝  ██║╚██╔╝██║██║   ██║╚════██║██║▄▄ ██║██║           ║
+║   ╚██████╔╝██║███████╗██║ ╚═╝ ██║╚██████╔╝███████║╚██████╔╝███████╗      ║
+║    ╚═════╝ ╚═╝╚══════╝╚═╝     ╚═╝ ╚═════╝ ╚══════╝ ╚══▀▀═╝ ╚══════╝      ║
+║                                                                          ║
+║                           GizmoSQL UI v1.0.0                             ║
+║                                                                          ║
+╚══════════════════════════════════════════════════════════════════════════╝
 
   Server running at: ${url}
 
@@ -55,7 +55,7 @@ app.listen(PORT, () => {
 `);
 
   // Open browser automatically
-  open(url).catch(() => {
+  openBrowser(url).catch(() => {
     console.log('  Could not open browser automatically.');
     console.log(`  Please open ${url} in your browser.`);
   });

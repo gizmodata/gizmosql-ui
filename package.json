@@ -14,7 +14,7 @@
     "build": "npm run build:frontend && npm run build:backend",
     "build:frontend": "cd src/frontend && npm run build",
     "build:backend": "cd src/backend && npm run build",
-    "bundle": "npm run build && esbuild dist/backend/src/index.js --bundle --platform=node --target=node20 --outfile=dist/bundle.cjs --format=cjs --banner:js='var __import_meta_url = \"file://\" + __filename;' --define:import.meta.url=__import_meta_url",
+    "bundle": "npm run build && node scripts/bundle.js",
     "start": "node dist/backend/src/index.js",
     "package": "npm run bundle && npx @yao-pkg/pkg dist/bundle.cjs --targets node20-macos-arm64,node20-linux-x64,node20-win-x64 --output dist/gizmosql-ui --config package.json",
     "package:macos": "npm run bundle && npx @yao-pkg/pkg dist/bundle.cjs --targets node20-macos-arm64 --output dist/gizmosql-ui-macos-arm64 --config package.json",
@@ -40,8 +40,7 @@
   "dependencies": {
     "@gizmodata/gizmosql-client": "^1.2.10",
     "cors": "^2.8.5",
-    "express": "^4.21.0",
-    "open": "^10.1.0"
+    "express": "^4.21.0"
   },
   "devDependencies": {
     "@yao-pkg/pkg": "^6.0.0",
