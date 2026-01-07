@@ -7,8 +7,9 @@ import open from 'open';
 import { apiRouter } from './routes/api.js';
 import { getStaticPath } from './utils/paths.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Handle both ESM and CJS contexts
+// Note: In CJS bundle, esbuild's banner provides __import_meta_url
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 const PORT = process.env.PORT || 4821;

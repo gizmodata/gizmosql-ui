@@ -43,11 +43,11 @@ jobs:
           cd src/frontend && npm ci
           cd ../backend && npm ci
 
-      - name: Build
-        run: npm run build
+      - name: Build and bundle
+        run: npm run bundle
 
       - name: Package executable
-        run: npx @yao-pkg/pkg . --target ${{ matrix.target }} --output dist/${{ matrix.artifact }}
+        run: npx @yao-pkg/pkg dist/bundle.cjs --target ${{ matrix.target }} --output dist/${{ matrix.artifact }} --config package.json
 
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v2
