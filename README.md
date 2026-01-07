@@ -2,6 +2,8 @@
 
 A web-based SQL interface for [GizmoSQL](https://github.com/gizmodata/gizmosql) servers. GizmoSQL UI provides a modern, responsive interface for connecting to and querying GizmoSQL databases using Apache Arrow Flight SQL.
 
+![GizmoSQL UI Screenshot](assets/screenshot.png)
+
 ## Features
 
 - **Connection Management**: Connect to GizmoSQL servers with support for TLS and authentication
