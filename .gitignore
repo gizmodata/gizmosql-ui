@@ -1,31 +1,37 @@
 # Dependencies
-node_modules/
+node_modules
+.pnp
+.pnp.js
 
-# Build outputs
+# pnpm
+.pnpm-store/
+
+# Testing
+coverage
+
+# Next.js
+.next/
+out/
+build
 dist/
-*.tgz
 
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# OS
+# Misc
 .DS_Store
-Thumbs.db
+*.pem
 
-# Environment
-.env
-.env.local
-.env.*.local
-
-# Logs
-*.log
+# Debug
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# Test coverage
-coverage/
+# Local env files
+.env*.local
+.env
 
-# pkg output
-gizmosql-ui-*
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts

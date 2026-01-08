@@ -1,50 +1,48 @@
 {
   "name": "gizmosql-ui",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "GizmoSQL UI - A web-based SQL interface for GizmoSQL servers",
-  "type": "module",
-  "main": "dist/backend/src/index.js",
-  "bin": {
-    "gizmosql-ui": "./dist/backend/src/index.js"
-  },
+  "private": true,
   "scripts": {
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "dev:backend": "cd src/backend && npm run dev",
-    "dev:frontend": "cd src/frontend && npm run dev",
-    "build": "npm run build:frontend && npm run build:backend",
-    "build:frontend": "cd src/frontend && npm run build",
-    "build:backend": "cd src/backend && npm run build",
-    "bundle": "npm run build && node scripts/bundle.js",
-    "start": "node dist/backend/src/index.js",
-    "package": "npm run bundle && npx @yao-pkg/pkg dist/bundle.cjs --targets node20-macos-arm64,node20-linux-x64,node20-win-x64 --output dist/gizmosql-ui --config package.json",
-    "package:macos": "npm run bundle && npx @yao-pkg/pkg dist/bundle.cjs --targets node20-macos-arm64 --output dist/gizmosql-ui-macos-arm64 --config package.json",
-    "clean": "rm -rf dist node_modules src/frontend/node_modules src/backend/node_modules"
-  },
-  "pkg": {
-    "assets": [
-      "dist/frontend/**/*"
-    ],
-    "outputPath": "dist"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "node .next/standalone/server.js",
+    "lint": "next lint",
+    "bundle": "pnpm build && node scripts/bundle.js",
+    "package": "pnpm bundle && cd dist && npx @yao-pkg/pkg . --targets node20-linux-x64,node20-macos-arm64,node20-win-x64 --output bin/gizmosql-ui",
+    "package:linux": "pnpm bundle && cd dist && npx @yao-pkg/pkg . --targets node20-linux-x64 --output bin/gizmosql-ui-linux-x64",
+    "package:macos": "pnpm bundle && cd dist && npx @yao-pkg/pkg . --targets node20-macos-arm64 --output bin/gizmosql-ui-macos-arm64",
+    "package:macos-x64": "pnpm bundle && cd dist && npx @yao-pkg/pkg . --targets node20-macos-x64 --output bin/gizmosql-ui-macos-x64",
+    "package:win": "pnpm bundle && cd dist && npx @yao-pkg/pkg . --targets node20-win-x64 --output bin/gizmosql-ui-win-x64",
+    "clean": "rm -rf dist .next node_modules"
   },
   "keywords": [
     "gizmosql",
     "gizmodata",
     "sql",
-    "ui",
     "database",
     "arrow",
-    "flight"
+    "flight",
+    "nextjs"
   ],
   "author": "GizmoData LLC",
   "license": "Apache-2.0",
   "dependencies": {
     "@gizmodata/gizmosql-client": "^1.2.10",
-    "cors": "^2.8.5",
-    "express": "^4.21.0"
+    "@monaco-editor/react": "^4.6.0",
+    "apache-arrow": "^21.1.0",
+    "lucide-react": "^0.562.0",
+    "next": "^14.2.0",
+    "parquet-wasm": "^0.7.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-icons": "^5.5.0"
   },
   "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
     "@yao-pkg/pkg": "^6.0.0",
-    "concurrently": "^9.1.0",
-    "esbuild": "^0.27.2"
+    "typescript": "^5.7.0"
   }
 }

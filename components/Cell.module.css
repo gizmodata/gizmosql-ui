@@ -1,0 +1,102 @@
+.cell {
+  margin: 12px 24px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--bg-primary);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cell:hover {
+  border-color: var(--border-color);
+}
+
+.cell.active {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 1px var(--primary-color);
+}
+
+.cellHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  border-radius: 7px 7px 0 0;
+}
+
+.cellHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cellHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.executeBtn {
+  min-width: 80px;
+}
+
+.cellStats {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.serverSelect {
+  padding: 4px 8px;
+  font-size: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-width: 140px;
+  cursor: pointer;
+}
+
+.serverSelect:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.cellEditor {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.editorLoading {
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.cellError {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  background-color: var(--error-bg);
+  color: var(--error-color);
+  font-size: 13px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.errorIcon {
+  flex-shrink: 0;
+}
+
+.cellResult {
+  padding: 12px;
+}
+
+.cellHint {
+  padding: 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+}

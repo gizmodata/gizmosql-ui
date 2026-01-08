@@ -44,12 +44,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm ci
-          cd src/frontend && npm ci
-          cd ../backend && npm ci
+          pnpm i
 
       - name: Build and bundle
-        run: npm run bundle
+        run: pnpm bundle
 
       - name: Package executable
         run: npx @yao-pkg/pkg dist/bundle.cjs --target ${{ matrix.target }} --output dist/${{ matrix.artifact }} --config package.json

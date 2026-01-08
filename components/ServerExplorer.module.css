@@ -1,0 +1,223 @@
+.serverExplorer {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.explorerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.explorerTitle {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.serverList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.serverGroup {
+  margin-bottom: 4px;
+}
+
+.serverItem {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  gap: 6px;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.serverItem:hover {
+  background-color: var(--bg-hover);
+}
+
+.serverName {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.serverStatusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--success-color);
+  flex-shrink: 0;
+}
+
+.serverStatusDot[data-status="disconnected"] {
+  background-color: var(--text-muted);
+}
+
+.serverStatusDot[data-status="error"] {
+  background-color: var(--error-color);
+}
+
+.serverDisconnect {
+  opacity: 0;
+  transition: opacity 0.1s ease;
+  font-size: 16px;
+}
+
+.serverItem:hover .serverDisconnect {
+  opacity: 1;
+}
+
+.serverChildren {
+  margin-left: 0;
+}
+
+.treeNode {
+  user-select: none;
+}
+
+.treeNodeContent {
+  display: flex;
+  align-items: center;
+  padding: 4px 12px;
+  gap: 6px;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.treeNodeContent:hover {
+  background-color: var(--bg-hover);
+}
+
+.treeNodeContent.clickable {
+  cursor: pointer;
+}
+
+.treeNodeContent.table:hover {
+  background-color: var(--primary-light);
+}
+
+.expandIcon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--text-muted);
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.expandIcon.expanded {
+  transform: rotate(90deg);
+}
+
+.nodeIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.nodeIconSvg {
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+}
+
+.iconServer {
+  color: var(--primary-color);
+}
+
+.iconCatalog {
+  color: #8b5cf6;
+}
+
+.iconSchema {
+  color: #f59e0b;
+}
+
+.iconTable {
+  color: #22c55e;
+}
+
+.iconView {
+  color: #06b6d4;
+}
+
+.nodeName {
+  font-size: 13px;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nodeBadge {
+  font-size: 9px;
+  padding: 2px 4px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-muted);
+  border-radius: 3px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.treeChildren {
+  margin-left: 0;
+}
+
+.loadingSpinner {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.tlsIcon {
+  margin-left: -2px;
+  margin-right: 2px;
+}
+
+.tlsSecure {
+  color: var(--success-color);
+}
+
+.tlsWarning {
+  color: var(--warning-color);
+}
+
+.tlsInsecure {
+  color: var(--error-color);
+}
