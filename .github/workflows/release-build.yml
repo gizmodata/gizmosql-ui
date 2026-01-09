@@ -17,20 +17,7 @@ permissions:
 
 jobs:
   build:
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            target: node20-linux-x64
-            artifact: gizmosql-ui-linux-x64
-          - os: macos-latest
-            target: node20-macos-arm64
-            artifact: gizmosql-ui-macos-arm64
-          - os: windows-latest
-            target: node20-win-x64
-            artifact: gizmosql-ui-win-x64.exe
-
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -39,31 +26,53 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
 
       - name: Install dependencies
         run: |
-          npm ci
-          cd src/frontend && npm ci
-          cd ../backend && npm ci
+          pnpm i
 
       - name: Build and bundle
-        run: npm run bundle
+        run: pnpm package
 
-      - name: Package executable
-        run: npx @yao-pkg/pkg dist/bundle.cjs --target ${{ matrix.target }} --output dist/${{ matrix.artifact }} --config package.json
-
-      - name: Generate artifact attestation
+      - name: Generate artifact attestation Linux x64
         uses: actions/attest-build-provenance@v2
         with:
-          subject-path: dist/${{ matrix.artifact }}
+          subject-path: dist/gizmosql-ui-linux-x64
 
-      - name: Upload artifact
+      - name: Upload artifact Linux x64
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact }}
-          path: dist/${{ matrix.artifact }}
+          name: gizmosql-ui-linux-x64
+          path: dist/gizmosql-ui-linux-x64
+          retention-days: 1
+
+      - name: Generate artifact attestation macOS ARM64
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: dist/gizmosql-ui-macos-arm64
+
+      - name: Upload artifact macOS ARM64
+        uses: actions/upload-artifact@v4
+        with:
+          name: gizmosql-ui-macos-arm64
+          path: dist/gizmosql-ui-macos-arm64
+          retention-days: 1
+
+      - name: Generate artifact attestation Windows x64
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: dist/gizmosql-ui-win-x64.exe
+
+      - name: Upload artifact Windows x64
+        uses: actions/upload-artifact@v4
+        with:
+          name: gizmosql-ui-win-x64.exe
+          path: dist/gizmosql-ui-win-x64.exe
           retention-days: 1
 
   release:

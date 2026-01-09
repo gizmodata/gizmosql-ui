@@ -1,0 +1,103 @@
+.serverSelectOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.serverSelectModal {
+  background-color: var(--bg-primary);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  width: 100%;
+  max-width: 400px;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.serverSelectHeader {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.serverSelectHeader h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.serverSelectHeader p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.serverSelectList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.serverSelectItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  margin-bottom: 8px;
+  transition: all 0.15s ease;
+}
+
+.serverSelectItem:last-child {
+  margin-bottom: 0;
+}
+
+.serverSelectItem:hover {
+  background-color: var(--bg-hover);
+  border-color: var(--primary-color);
+}
+
+.serverSelectDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--success-color);
+  flex-shrink: 0;
+}
+
+.serverSelectDot[data-status="disconnected"] {
+  background-color: var(--text-muted);
+}
+
+.serverSelectDot[data-status="error"] {
+  background-color: var(--error-color);
+}
+
+.serverSelectName {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.serverSelectHost {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.serverSelectFooter {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+}

@@ -1,0 +1,82 @@
+.notebookExplorer {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--border-color);
+  max-height: 30%;
+  overflow: hidden;
+}
+
+.explorerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.explorerTitle {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.notebookList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.notebookItem {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.notebookItem:hover {
+  background-color: var(--bg-hover);
+}
+
+.notebookItem.active {
+  background-color: var(--primary-light);
+}
+
+.notebookIcon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.notebookName {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notebookNameInput {
+  flex: 1;
+  padding: 2px 6px;
+  font-size: 13px;
+  border: 1px solid var(--primary-color);
+  border-radius: 4px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.notebookDelete {
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+
+.notebookItem:hover .notebookDelete {
+  opacity: 1;
+}
