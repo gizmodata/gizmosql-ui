@@ -1,0 +1,87 @@
+.notebookView {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.notebookView.empty {
+  align-items: center;
+  justify-content: center;
+}
+
+.emptyNotebookPrompt {
+  text-align: center;
+  padding: 48px;
+}
+
+.emptyNotebookPrompt h2 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+.emptyNotebookPrompt p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.notebookHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 24px 8px;
+  flex-shrink: 0;
+}
+
+.notebookTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.notebookTitleInput {
+  font-size: 20px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border: 1px solid var(--primary-color);
+  border-radius: 6px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.editNameBtn {
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+
+.notebookHeader:hover .editNameBtn {
+  opacity: 1;
+}
+
+.notebookCells {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 48px;
+}
+
+.addCellBottom {
+  display: block;
+  width: calc(100% - 48px);
+  margin: 8px 24px 24px;
+  padding: 12px;
+  text-align: center;
+  border: 2px dashed var(--border-color);
+  border-radius: 8px;
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+}
+
+.addCellBottom:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background-color: var(--primary-light);
+}

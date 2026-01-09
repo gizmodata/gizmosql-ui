@@ -1,0 +1,119 @@
+name: PR Build Test
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build & Package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Lint
+        run: pnpm lint
+        continue-on-error: true
+
+      - name: Build Next.js
+        run: pnpm build
+
+      - name: Package binaries
+        run: pnpm package
+
+      - name: List build artifacts
+        run: |
+          echo "📦 Build artifacts:"
+          ls -lah dist/
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gizmosql-ui-linux-x64
+          path: dist/gizmosql-ui-linux-x64
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Upload macOS ARM64 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gizmosql-ui-macos-arm64
+          path: dist/gizmosql-ui-macos-arm64
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gizmosql-ui-win-x64
+          path: dist/gizmosql-ui-win-x64.exe
+          retention-days: 7
+          if-no-files-found: error
+
+  # Optional: Test the Linux binary actually runs
+  test-binary:
+    name: Test Binary
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: gizmosql-ui-linux-x64
+
+      - name: Make executable
+        run: chmod +x gizmosql-ui-linux-x64
+
+      - name: Test binary starts
+        run: |
+          # Start the binary in background
+          timeout 10s ./gizmosql-ui-linux-x64 &
+          PID=$!
+          
+          # Wait for server to be ready
+          sleep 5
+          
+          # Check if the server is responding
+          if curl -s http://localhost:3000 > /dev/null; then
+            echo "✅ Server started successfully"
+          else
+            echo "❌ Server failed to start"
+            exit 1
+          fi
+          
+          # Clean up
+          kill $PID 2>/dev/null || true

@@ -1,0 +1,174 @@
+.resultsTableContainer {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: var(--bg-primary);
+}
+
+.resultsTableWrapper {
+  overflow: auto;
+  position: relative;
+}
+
+.resultsLoadingOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.8);
+  color: var(--text-secondary);
+  font-size: 13px;
+  z-index: 10;
+}
+
+[data-theme="dark"] .resultsLoadingOverlay {
+  background-color: rgba(30, 30, 30, 0.8);
+}
+
+.loadingSpinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.resultsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.resultsTable th,
+.resultsTable td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-light);
+  white-space: nowrap;
+}
+
+.resultsTable th {
+  background-color: var(--bg-tertiary);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.resultsTable tbody tr:hover {
+  background-color: var(--bg-hover);
+}
+
+.rowNumberHeader,
+.rowNumber {
+  color: var(--text-muted);
+  font-size: 11px;
+  text-align: right;
+  padding-right: 12px;
+  width: 50px;
+  min-width: 50px;
+}
+
+.columnHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.columnName {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.columnType {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: normal;
+}
+
+.cellNull {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.cellNumber {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  text-align: right;
+}
+
+.cellBoolean {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.emptyResults {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 24px;
+}
+
+.resultsFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: var(--bg-tertiary);
+  border-top: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.resultsPagination {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.paginationInfo {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.resultsExport {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.downloadMenuContainer {
+  position: relative;
+}
+
+.downloadMenu {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  margin-bottom: 4px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  z-index: 100;
+  min-width: 200px;
+}
+
+.downloadMenu button {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.downloadMenu button:hover {
+  background-color: var(--bg-hover);
+}

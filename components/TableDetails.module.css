@@ -1,0 +1,381 @@
+.tableDetails {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+}
+
+.tableDetails.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+  padding: 24px;
+}
+
+.tableDetailsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.tableDetailsTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.tableIcon {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.tableName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tableDetailsMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tableRowCount {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.optionsBtn {
+  font-size: 16px;
+}
+
+.optionsMenu {
+  position: absolute;
+  top: 100%;
+  right: 8px;
+  margin-top: 4px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  z-index: 100;
+  min-width: 280px;
+}
+
+.optionsMenu button {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.optionsMenu button:hover {
+  background-color: var(--bg-hover);
+}
+
+.optionsMenu button.active {
+  background-color: var(--primary-light);
+}
+
+.optionsDivider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 4px 0;
+}
+
+.tableDetailsTabs {
+  display: flex;
+  padding: 0 16px;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.tabBtn {
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tabBtn:hover {
+  color: var(--text-primary);
+}
+
+.tabBtn.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+.tableDetailsContent {
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+}
+
+.tableDetailsLoading,
+.tableDetailsError {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.tableDetailsError {
+  color: var(--error-color);
+}
+
+.loadingSpinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.tableDetailsColumns {
+  padding: 0;
+}
+
+.tableColumnHeader {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  background-color: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.columnHeaderIcon {
+  width: 24px;
+  flex-shrink: 0;
+}
+
+.columnHeaderName {
+  flex: 1;
+}
+
+.columnHeaderType {
+  width: 80px;
+  text-align: right;
+}
+
+.columnHeaderStat {
+  width: 50px;
+  text-align: right;
+}
+
+.tableColumnItem {
+  display: flex;
+  align-items: center;
+  padding: 6px 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.tableColumnItem:hover {
+  background-color: var(--bg-hover);
+}
+
+.columnTypeIcon {
+  width: 24px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 3px;
+  flex-shrink: 0;
+  margin-right: 8px;
+}
+
+.columnTypeIcon.small {
+  width: 18px;
+  height: 16px;
+  font-size: 9px;
+  margin-right: 4px;
+}
+
+.typeNumber {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.typeString {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.typeDate {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.typeBool {
+  background-color: #f3e8ff;
+  color: #7c3aed;
+}
+
+.typeOther {
+  background-color: var(--bg-tertiary);
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .typeNumber {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+[data-theme="dark"] .typeString {
+  background-color: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+[data-theme="dark"] .typeDate {
+  background-color: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+}
+
+[data-theme="dark"] .typeBool {
+  background-color: rgba(139, 92, 246, 0.2);
+  color: #a78bfa;
+}
+
+.columnName {
+  flex: 1;
+  font-size: 12px;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.columnTypeLabel {
+  width: 80px;
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.columnStat {
+  width: 50px;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Preview table */
+.previewTableContainer {
+  overflow: auto;
+}
+
+.previewTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.previewTable th,
+.previewTable td {
+  padding: 6px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-light);
+  white-space: nowrap;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.previewTable th {
+  background-color: var(--bg-tertiary);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.previewTable tbody tr:hover {
+  background-color: var(--bg-hover);
+}
+
+.previewFooter {
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--text-muted);
+  background-color: var(--bg-tertiary);
+  border-top: 1px solid var(--border-color);
+}
+
+/* DDL */
+.ddlContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.ddlEditor {
+  flex: 1;
+  min-height: 0;
+}
+
+.editorLoading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.ddlFooter {
+  padding: 8px 12px;
+  background-color: var(--bg-tertiary);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ddlEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 13px;
+}

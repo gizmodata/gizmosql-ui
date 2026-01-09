@@ -10,25 +10,61 @@ A web-based SQL interface for [GizmoSQL](https://github.com/gizmodata/gizmosql) 
 - **SQL Editor**: Monaco-based SQL editor with syntax highlighting and autocomplete
 - **Results Grid**: View query results in a responsive table with type-aware formatting
 - **Schema Browser**: Browse catalogs, schemas, tables, and columns
+- **Export Options**: Export results to CSV, TSV, JSON, or Parquet formats
 
 ## Quick Start
 
-### macOS (Homebrew)
+### Prerequisites
+
+- Node.js 20+
+- pnpm 9+
+
+### Development
 
 ```bash
-brew install gizmodata/tap/gizmosql-ui
-gizmosql-ui
+# Install dependencies
+pnpm install
+
+# Run in development mode
+pnpm dev
 ```
 
-### Using Pre-built Executable
+The development server runs at http://localhost:3000
 
-Download the appropriate executable for your platform from the [releases page](https://github.com/gizmodata/gizmosql-ui/releases), then run:
+### Production Build
 
 ```bash
-./gizmosql-ui
+# Build for production
+pnpm build
+
+# Start the production server
+pnpm start
 ```
 
-The UI will automatically open in your default browser at `http://localhost:4821`.
+### Creating Standalone Executables
+
+You can package the app into standalone executables for Linux, macOS, and Windows:
+
+```bash
+# Build executables for all platforms
+pnpm package
+
+# Build for specific platforms
+pnpm package:linux      # Linux x64
+pnpm package:macos      # macOS ARM64 (Apple Silicon)
+pnpm package:macos-x64  # macOS x64 (Intel)
+pnpm package:win        # Windows x64
+```
+
+The executables will be created in `dist/bin/`. Run them directly:
+
+```bash
+./dist/bin/gizmosql-ui-macos-arm64   # macOS
+./dist/bin/gizmosql-ui-linux-x64     # Linux
+dist\bin\gizmosql-ui-win-x64.exe     # Windows
+```
+
+The executable will start the server and automatically open your browser to `http://localhost:4821`.
 
 ### Starting a GizmoSQL Server (Optional)
 
@@ -57,53 +93,6 @@ Then connect GizmoSQL UI using:
 - Use TLS: enabled
 - Skip TLS Verify: enabled (for self-signed certificate)
 
-### Building from Source
-
-#### Prerequisites
-
-- Node.js 20+
-- npm 9+
-
-#### Development
-
-```bash
-# Install root dependencies
-npm install
-
-# Install frontend dependencies
-cd src/frontend && npm install && cd ../..
-
-# Install backend dependencies
-cd src/backend && npm install && cd ../..
-
-# Run in development mode (both frontend and backend with hot reload)
-npm run dev
-```
-
-The development server runs at:
-- Frontend: http://localhost:5173 (Vite dev server)
-- Backend: http://localhost:4821 (Express server)
-
-#### Production Build
-
-```bash
-# Build both frontend and backend
-npm run build
-
-# Start the production server
-npm start
-```
-
-#### Creating Executables
-
-```bash
-# Build executables for all platforms
-npm run package
-
-# Build for macOS ARM64 only
-npm run package:macos
-```
-
 ## Configuration
 
 ### Connection Parameters
@@ -112,8 +101,8 @@ npm run package:macos
 |-----------|-------------|---------|
 | Host | GizmoSQL server hostname or IP | localhost |
 | Port | GizmoSQL server port | 31337 |
-| Username | Authentication username | (optional) |
-| Password | Authentication password | (optional) |
+| Username | Authentication username | (required) |
+| Password | Authentication password | (required) |
 | Use TLS | Enable TLS encryption | true |
 | Skip TLS Verify | Skip TLS certificate verification | false |
 
@@ -121,21 +110,21 @@ npm run package:macos
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| PORT | HTTP server port | 4821 |
+| PORT | HTTP server port | 3000 |
 
 ## Architecture
 
 ```
 ┌──────────────────────────────────────────────────┐
-│  GizmoSQL UI                                     │
+│  GizmoSQL UI (Next.js)                           │
 ├──────────────────────────────────────────────────┤
-│  React Frontend                                  │
+│  React Frontend (App Router)                     │
 │  ├── Monaco SQL Editor                           │
 │  ├── Results Grid                                │
 │  └── Schema Browser                              │
 ├──────────────────────────────────────────────────┤
-│  Express Backend                                 │
-│  ├── REST API (/api/*)                           │
+│  Next.js API Routes                              │
+│  ├── /api/* endpoints                            │
 │  └── @gizmodata/gizmosql-client                  │
 └──────────────────────────────────────────────────┘
                         │
@@ -144,6 +133,32 @@ npm run package:macos
 ┌──────────────────────────────────────────────────┐
 │  GizmoSQL Server                                 │
 └──────────────────────────────────────────────────┘
+```
+
+## Project Structure
+
+```
+gizmosql-ui/
+├── app/                    # Next.js App Router
+│   ├── api/               # API routes
+│   │   ├── catalogs/
+│   │   ├── columns/
+│   │   ├── connect/
+│   │   ├── disconnect/
+│   │   ├── health/
+│   │   ├── query/
+│   │   ├── schemas/
+│   │   └── tables/
+│   ├── layout.tsx         # Root layout
+│   └── page.tsx           # Main page
+├── components/            # React components
+├── context/              # React context providers
+├── lib/                  # Utilities and services
+│   ├── api.ts           # Frontend API client
+│   ├── connections.ts   # Server connection manager
+│   ├── services/        # Backend services
+│   └── types.ts         # TypeScript types
+└── public/              # Static assets
 ```
 
 ## API Endpoints
@@ -168,6 +183,7 @@ Apache License 2.0
 Developed by [GizmoData LLC](https://gizmodata.com)
 
 Powered by:
+- [Next.js](https://nextjs.org/) - React framework
 - [@gizmodata/gizmosql-client](https://www.npmjs.com/package/@gizmodata/gizmosql-client) - GizmoSQL client library
 - [Monaco Editor](https://microsoft.github.io/monaco-editor/) - Code editor
 - [Apache Arrow](https://arrow.apache.org/) - Columnar data format
