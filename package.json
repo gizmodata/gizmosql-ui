@@ -3,14 +3,14 @@
   "version": "2.0.0",
   "description": "GizmoSQL UI - A web-based SQL interface for GizmoSQL servers",
   "private": true,
-  "bin": "server.js",
+  "bin": "launcher.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "node .next/standalone/server.js",
     "lint": "next lint",
     "bundle": "pnpm build && node scripts/bundle.js",
-    "package": "pnpm build && cd .next/standalone && sed -i.bak 's/process.chdir(__dirname)//' server.js && rm server.js.bak && npx @yao-pkg/pkg . -CGZIP",
+    "package": "pnpm build && cp -r public .next/standalone/ && cp scripts/launcher.js .next/standalone/ && cp -r .next/static .next/standalone/.next/ && cd .next/standalone && sed -i.bak 's/process.chdir(__dirname)//' server.js && rm server.js.bak && chmod +x launcher.js && npx @yao-pkg/pkg . -CGZIP",
     "clean": "rm -rf dist .next node_modules"
   },
   "keywords": [
@@ -33,7 +33,8 @@
     "parquet-wasm": "^0.7.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-icons": "^5.5.0"
+    "react-icons": "^5.5.0",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
