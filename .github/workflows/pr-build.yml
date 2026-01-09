@@ -108,7 +108,7 @@ jobs:
           sleep 5
           
           # Check if the server is responding
-          if curl -s http://localhost:4821 > /dev/null; then
+          if curl -s http://localhost:3000 > /dev/null; then
             echo "✅ Server started successfully"
           else
             echo "❌ Server failed to start"

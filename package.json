@@ -10,7 +10,7 @@
     "start": "node .next/standalone/server.js",
     "lint": "next lint",
     "bundle": "pnpm build && node scripts/bundle.js",
-    "package": "pnpm build && cd .next/standalone && sed -i '' 's/process.chdir(__dirname)//' server.js && npx @yao-pkg/pkg . -CGZIP",
+    "package": "pnpm build && cd .next/standalone && sed -i.bak 's/process.chdir(__dirname)//' server.js && rm server.js.bak && npx @yao-pkg/pkg . -CGZIP",
     "clean": "rm -rf dist .next node_modules"
   },
   "keywords": [
