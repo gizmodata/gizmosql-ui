@@ -75,6 +75,7 @@ jobs:
         run: pnpm package:${{ matrix.target }}
 
       - name: Generate artifact attestation
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: actions/attest-build-provenance@v2
         with:
           subject-path: ${{ matrix.build-output }}
