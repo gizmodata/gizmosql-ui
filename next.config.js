@@ -9,6 +9,10 @@ const nextConfig = {
       bodySizeLimit: '10mb',
     },
   },
+
+   images: {
+    unoptimized: true,
+  },
   
   // Configure webpack for parquet-wasm
   webpack: (config, { isServer }) => {
