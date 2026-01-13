@@ -10,7 +10,7 @@
     "start": "node .next/standalone/server.js",
     "lint": "next lint",
     "bundle": "pnpm build && node scripts/bundle.js",
-    "package": "pnpm build && cp -r public .next/standalone/ && cp scripts/launcher.js .next/standalone/ && cp -r .next/static .next/standalone/.next/ && cd .next/standalone && sed -i.bak 's/process.chdir(__dirname)//' server.js && rm server.js.bak && chmod +x launcher.js && npx @yao-pkg/pkg . -CGZIP",
+    "package": "pnpm build && cp -r public .next/standalone/ && cp scripts/launcher.js .next/standalone/ && cp -r .next/static .next/standalone/.next/ && cd .next/standalone && sed -i.bak 's/process.chdir(__dirname)//' server.js && rm server.js.bak && chmod +x launcher.js && npx @yao-pkg/pkg .",
     "clean": "rm -rf dist .next node_modules"
   },
   "keywords": [
@@ -26,10 +26,10 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@gizmodata/gizmosql-client": "^1.2.10",
-    "@monaco-editor/react": "^4.6.0",
+    "@monaco-editor/react": "^4.7.0",
     "apache-arrow": "^21.1.0",
     "lucide-react": "^0.562.0",
-    "next": "^14.2.0",
+    "next": "^14.2.35",
     "parquet-wasm": "^0.7.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -37,11 +37,11 @@
     "sharp": "^0.34.5"
   },
   "devDependencies": {
-    "@types/node": "^22.10.0",
-    "@types/react": "^18.3.0",
-    "@types/react-dom": "^18.3.0",
-    "@yao-pkg/pkg": "^6.0.0",
-    "typescript": "^5.7.0"
+    "@types/node": "^22.19.6",
+    "@types/react": "^18.3.27",
+    "@types/react-dom": "^18.3.7",
+    "@yao-pkg/pkg": "^6.11.0",
+    "typescript": "^5.9.3"
   },
   "pkg": {
     "assets": [
