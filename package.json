@@ -1,6 +1,6 @@
 {
   "name": "gizmosql-ui",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "GizmoSQL UI - A web-based SQL interface for GizmoSQL servers",
   "private": true,
   "bin": "launcher.js",
@@ -10,11 +10,11 @@
     "start": "node .next/standalone/server.js",
     "lint": "next lint",
     "bundle": "pnpm build && node scripts/bundle.js",
-    "package": "pnpm package:prepare &&  cd .next/standalone && npx @yao-pkg/pkg .",
+    "package": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . --compress Brotli",
     "package:prepare": "pnpm build && cp -r public .next/standalone/ && cp scripts/launcher.js .next/standalone/ && cp -r .next/static .next/standalone/.next/ && cd .next/standalone && sed -i.bak 's/process.chdir(__dirname)//' server.js && rm server.js.bak && chmod +x launcher.js",
-    "package:macos": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node22-macos-arm64",
-    "package:linux": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node22-linux-x64",
-    "package:windows": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node22-win-x64",
+    "package:macos": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node22-macos-arm64 --compress Brotli",
+    "package:linux": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node22-linux-x64 --compress Brotli",
+    "package:windows": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node22-win-x64 --compress Brotli",
     "clean": "rm -rf dist .next node_modules"
   },
   "keywords": [
