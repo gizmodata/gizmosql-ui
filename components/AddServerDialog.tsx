@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from 'react';
 import { useApp } from '@/context/AppContext';
+import { SavedConnection } from '@/lib/types';
 import Image from 'next/image';
 import styles from './AddServerDialog.module.css';
 
@@ -11,7 +12,7 @@ interface AddServerDialogProps {
 }
 
 export function AddServerDialog({ onClose, onSuccess }: AddServerDialogProps) {
-  const { connectServer } = useApp();
+  const { connectServer, saveConnection, deleteSavedConnection, connectFromSaved, state } = useApp();
   const [name, setName] = useState('');
   const [host, setHost] = useState('localhost');
   const [port, setPort] = useState(31337);
@@ -19,26 +20,58 @@ export function AddServerDialog({ onClose, onSuccess }: AddServerDialogProps) {
   const [password, setPassword] = useState('');
   const [useTls, setUseTls] = useState(true);
   const [skipTlsVerify, setSkipTlsVerify] = useState(false);
+  const [queryTimeout, setQueryTimeout] = useState(0); // 0 = unlimited
+  const [saveThisConnection, setSaveThisConnection] = useState(true);
+  const [rememberPassword, setRememberPassword] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedSavedId, setSelectedSavedId] = useState<string | null>(null);
+
+  const loadSavedConnection = (saved: SavedConnection) => {
+    setSelectedSavedId(saved.id);
+    setName(saved.name);
+    setHost(saved.host);
+    setPort(saved.port);
+    setUsername(saved.username || '');
+    setPassword(saved.password || '');
+    setUseTls(saved.useTls);
+    setSkipTlsVerify(saved.skipTlsVerify);
+    setQueryTimeout(saved.queryTimeout || 0);
+    setRememberPassword(!!saved.password);
+  };
+
+  const handleDeleteSaved = (e: React.MouseEvent, savedId: string) => {
+    e.stopPropagation();
+    deleteSavedConnection(savedId);
+    if (selectedSavedId === savedId) {
+      setSelectedSavedId(null);
+    }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsConnecting(true);
     setError(null);
 
+    const config = {
+      host,
+      port,
+      username: username || undefined,
+      password: password || undefined,
+      useTls,
+      skipTlsVerify,
+      queryTimeout: queryTimeout || undefined,
+    };
+    const displayName = name || `${host}:${port}`;
+
     try {
-      await connectServer(
-        {
-          host,
-          port,
-          username: username || undefined,
-          password: password || undefined,
-          useTls,
-          skipTlsVerify,
-        },
-        name || `${host}:${port}`
-      );
+      await connectServer(config, displayName);
+      // Save connection if checkbox is checked
+      if (saveThisConnection) {
+        // Only include password if user opted to remember it
+        const configToSave = rememberPassword ? config : { ...config, password: undefined };
+        saveConnection(configToSave, displayName);
+      }
       onSuccess();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Connection failed');
@@ -67,6 +100,34 @@ export function AddServerDialog({ onClose, onSuccess }: AddServerDialogProps) {
             <div className={styles.dialogError}>
               <span className={styles.errorIcon}>⚠</span>
               {error}
+            </div>
+          )}
+
+          {state.savedConnections.length > 0 && (
+            <div className={styles.savedConnections}>
+              <label>Saved Connections</label>
+              <div className={styles.savedConnectionsList}>
+                {state.savedConnections.map((saved) => (
+                  <div
+                    key={saved.id}
+                    className={`${styles.savedConnectionItem} ${selectedSavedId === saved.id ? styles.selected : ''}`}
+                    onClick={() => loadSavedConnection(saved)}
+                  >
+                    <span className={styles.savedConnectionName}>{saved.name}</span>
+                    <span className={styles.savedConnectionDetails}>
+                      {saved.username}@{saved.host}:{saved.port}
+                    </span>
+                    <button
+                      type="button"
+                      className={styles.deleteSavedBtn}
+                      onClick={(e) => handleDeleteSaved(e, saved.id)}
+                      title="Delete saved connection"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -149,6 +210,40 @@ export function AddServerDialog({ onClose, onSuccess }: AddServerDialogProps) {
               />
               <span>Skip TLS Verification</span>
             </label>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="queryTimeout">Query Timeout (seconds)</label>
+            <input
+              type="number"
+              id="queryTimeout"
+              value={queryTimeout}
+              onChange={(e) => setQueryTimeout(parseInt(e.target.value) || 0)}
+              placeholder="0 (unlimited)"
+              min={0}
+            />
+            <span className={styles.fieldHint}>0 = unlimited (no timeout)</span>
+          </div>
+
+          <div className={`${styles.formRow} ${styles.checkboxRow}`}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={saveThisConnection}
+                onChange={(e) => setSaveThisConnection(e.target.checked)}
+              />
+              <span>Save connection for later</span>
+            </label>
+            {saveThisConnection && (
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={rememberPassword}
+                  onChange={(e) => setRememberPassword(e.target.checked)}
+                />
+                <span>Remember password</span>
+              </label>
+            )}
           </div>
 
           <div className={styles.dialogActions}>

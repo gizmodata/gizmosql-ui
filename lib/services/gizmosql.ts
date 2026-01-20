@@ -7,6 +7,7 @@ export interface GizmoSQLConfig {
   password?: string;
   useTls: boolean;
   skipTlsVerify: boolean;
+  queryTimeout?: number; // Timeout in seconds (0 or undefined = unlimited)
 }
 
 export interface QueryResult {
@@ -23,9 +24,22 @@ interface ArrowRow {
 export class GizmoSQLService {
   private client: FlightSQLClient | null = null;
   private config: GizmoSQLConfig;
+  private queryQueue: Promise<unknown> = Promise.resolve();
 
   constructor(config: GizmoSQLConfig) {
     this.config = config;
+  }
+
+  // Queue a query to ensure sequential execution per connection
+  private async queueQuery<T>(fn: () => Promise<T>): Promise<T> {
+    // Chain onto the existing queue
+    const result = this.queryQueue.then(
+      () => fn(),
+      () => fn() // Continue even if previous query failed
+    );
+    // Update queue to track this query (ignore errors to keep queue moving)
+    this.queryQueue = result.catch(() => {});
+    return result;
   }
 
   async connect(): Promise<void> {
@@ -65,31 +79,48 @@ export class GizmoSQLService {
       throw new Error('Not connected to GizmoSQL server');
     }
 
-    const startTime = Date.now();
-    const table = await this.client.execute(sql);
-    const executionTimeMs = Date.now() - startTime;
+    return this.queueQuery(async () => {
+      const startTime = Date.now();
+      const timeoutMs = this.config.queryTimeout ? this.config.queryTimeout * 1000 : 0;
 
-    // Extract column information from schema
-    const columns = table.schema.fields.map(field => ({
-      name: field.name,
-      type: this.normalizeTypeName(field.type.toString()),
-    }));
+      // Create the query promise
+      const queryPromise = this.client!.execute(sql);
 
-    // Convert Arrow table to array of objects
-    const rows = table.toArray().map((row: ArrowRow) => {
-      const obj: Record<string, unknown> = {};
-      for (const field of table.schema.fields) {
-        obj[field.name] = this.convertValue(row[field.name], field.type.toString());
+      // If timeout is set (> 0), race against timeout
+      let table;
+      if (timeoutMs > 0) {
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error(`Query timeout: exceeded ${this.config.queryTimeout} seconds`)), timeoutMs);
+        });
+        table = await Promise.race([queryPromise, timeoutPromise]);
+      } else {
+        table = await queryPromise;
       }
-      return obj;
-    });
 
-    return {
-      columns,
-      rows,
-      rowCount: rows.length,
-      executionTimeMs,
-    };
+      const executionTimeMs = Date.now() - startTime;
+
+      // Extract column information from schema
+      const columns = table.schema.fields.map(field => ({
+        name: field.name,
+        type: this.normalizeTypeName(field.type.toString()),
+      }));
+
+      // Convert Arrow table to array of objects
+      const rows = table.toArray().map((row: ArrowRow) => {
+        const obj: Record<string, unknown> = {};
+        for (const field of table.schema.fields) {
+          obj[field.name] = this.convertValue(row[field.name], field.type.toString());
+        }
+        return obj;
+      });
+
+      return {
+        columns,
+        rows,
+        rowCount: rows.length,
+        executionTimeMs,
+      };
+    });
   }
 
   async getCatalogs(): Promise<string[]> {
@@ -97,7 +128,7 @@ export class GizmoSQLService {
       throw new Error('Not connected to GizmoSQL server');
     }
 
-    return this.client.getCatalogs();
+    return this.queueQuery(() => this.client!.getCatalogs());
   }
 
   async getSchemas(catalog?: string): Promise<Array<{ catalog: string; schema: string }>> {
@@ -105,7 +136,7 @@ export class GizmoSQLService {
       throw new Error('Not connected to GizmoSQL server');
     }
 
-    return this.client.getSchemas(catalog);
+    return this.queueQuery(() => this.client!.getSchemas(catalog));
   }
 
   async getTables(catalog?: string, schema?: string): Promise<Array<{
@@ -118,13 +149,15 @@ export class GizmoSQLService {
       throw new Error('Not connected to GizmoSQL server');
     }
 
-    const tables = await this.client.getTables(catalog, schema);
-    return tables.map((t) => ({
-      catalog: t.catalog,
-      schema: t.schema,
-      name: t.tableName,
-      type: t.tableType,
-    }));
+    return this.queueQuery(async () => {
+      const tables = await this.client!.getTables(catalog, schema);
+      return tables.map((t) => ({
+        catalog: t.catalog,
+        schema: t.schema,
+        name: t.tableName,
+        type: t.tableType,
+      }));
+    });
   }
 
   async getColumns(catalog?: string, schema?: string, tableName?: string): Promise<Array<{
@@ -139,40 +172,42 @@ export class GizmoSQLService {
       throw new Error('Not connected to GizmoSQL server');
     }
 
-    // Use a query to get column information
-    let sql = `
-      SELECT
-        table_catalog as catalog_name,
-        table_schema as schema_name,
-        table_name,
-        column_name,
-        data_type,
-        ordinal_position
-      FROM information_schema.columns
-      WHERE 1=1
-    `;
+    return this.queueQuery(async () => {
+      // Use a query to get column information
+      let sql = `
+        SELECT
+          table_catalog as catalog_name,
+          table_schema as schema_name,
+          table_name,
+          column_name,
+          data_type,
+          ordinal_position
+        FROM information_schema.columns
+        WHERE 1=1
+      `;
 
-    if (catalog) {
-      sql += ` AND table_catalog = '${catalog}'`;
-    }
-    if (schema) {
-      sql += ` AND table_schema = '${schema}'`;
-    }
-    if (tableName) {
-      sql += ` AND table_name = '${tableName}'`;
-    }
+      if (catalog) {
+        sql += ` AND table_catalog = '${catalog}'`;
+      }
+      if (schema) {
+        sql += ` AND table_schema = '${schema}'`;
+      }
+      if (tableName) {
+        sql += ` AND table_name = '${tableName}'`;
+      }
 
-    sql += ' ORDER BY table_catalog, table_schema, table_name, ordinal_position';
+      sql += ' ORDER BY table_catalog, table_schema, table_name, ordinal_position';
 
-    const table = await this.client.execute(sql);
-    return table.toArray().map((row: ArrowRow) => ({
-      catalog: row.catalog_name as string,
-      schema: row.schema_name as string,
-      table: row.table_name as string,
-      name: row.column_name as string,
-      type: row.data_type as string,
-      position: row.ordinal_position as number,
-    }));
+      const table = await this.client!.execute(sql);
+      return table.toArray().map((row: ArrowRow) => ({
+        catalog: row.catalog_name as string,
+        schema: row.schema_name as string,
+        table: row.table_name as string,
+        name: row.column_name as string,
+        type: row.data_type as string,
+        position: row.ordinal_position as number,
+      }));
+    });
   }
 
   private convertValue(value: unknown, fieldType?: string): unknown {

@@ -158,9 +158,99 @@
   color: var(--error-color);
 }
 
+.fieldHint {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
 .dialogActions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
   margin-top: 24px;
+}
+
+/* Saved connections */
+.savedConnections {
+  margin-bottom: 20px;
+}
+
+.savedConnections > label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.savedConnectionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 150px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.savedConnectionItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.savedConnectionItem:hover {
+  background-color: var(--bg-hover);
+}
+
+.savedConnectionItem.selected {
+  background-color: var(--primary-light);
+  border: 1px solid var(--primary-color);
+}
+
+.savedConnectionName {
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.savedConnectionDetails {
+  flex: 1;
+  font-size: 12px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deleteSavedBtn {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  color: var(--text-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+.savedConnectionItem:hover .deleteSavedBtn {
+  opacity: 1;
+}
+
+.deleteSavedBtn:hover {
+  background-color: var(--error-bg);
+  color: var(--error-color);
 }

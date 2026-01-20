@@ -7,6 +7,7 @@ export interface ServerConnection {
   username?: string;
   useTls: boolean;
   skipTlsVerify: boolean;
+  queryTimeout?: number; // Timeout in seconds (0 or undefined = unlimited)
   sessionId: string;
   status: 'connected' | 'disconnected' | 'error';
   errorMessage?: string;
@@ -19,6 +20,20 @@ export interface ServerConfig {
   password?: string;
   useTls: boolean;
   skipTlsVerify: boolean;
+  queryTimeout?: number; // Timeout in seconds (0 or undefined = unlimited)
+}
+
+// Saved connection config (stored in localStorage)
+export interface SavedConnection {
+  id: string;
+  name: string;
+  host: string;
+  port: number;
+  username?: string;
+  password?: string;
+  useTls: boolean;
+  skipTlsVerify: boolean;
+  queryTimeout?: number; // Timeout in seconds (0 or undefined = unlimited)
 }
 
 // Schema browser types
@@ -87,6 +102,7 @@ export type Theme = 'light' | 'dark';
 export interface AppState {
   theme: Theme;
   servers: ServerConnection[];
+  savedConnections: SavedConnection[];
   notebooks: Notebook[];
   activeNotebookId: string | null;
 }

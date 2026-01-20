@@ -1,7 +1,7 @@
 'use client';
 
-import { createContext, useContext, useReducer, useCallback, ReactNode, useEffect } from 'react';
-import { AppState, Theme, ServerConnection, ServerConfig, Notebook, Cell, CellResult } from '@/lib/types';
+import { createContext, useContext, useReducer, useCallback, ReactNode, useEffect, useRef } from 'react';
+import { AppState, Theme, ServerConnection, ServerConfig, SavedConnection, Notebook, Cell, CellResult } from '@/lib/types';
 import { api } from '@/lib/api';
 
 // Generate unique IDs
@@ -11,6 +11,7 @@ const generateId = () => crypto.randomUUID();
 const initialState: AppState = {
   theme: 'light',
   servers: [],
+  savedConnections: [],
   notebooks: [],
   activeNotebookId: null,
 };
@@ -21,6 +22,9 @@ type Action =
   | { type: 'ADD_SERVER'; server: ServerConnection }
   | { type: 'REMOVE_SERVER'; serverId: string }
   | { type: 'UPDATE_SERVER'; serverId: string; updates: Partial<ServerConnection> }
+  | { type: 'ADD_SAVED_CONNECTION'; savedConnection: SavedConnection }
+  | { type: 'REMOVE_SAVED_CONNECTION'; savedConnectionId: string }
+  | { type: 'UPDATE_SAVED_CONNECTION'; savedConnectionId: string; updates: Partial<SavedConnection> }
   | { type: 'ADD_NOTEBOOK'; notebook: Notebook }
   | { type: 'REMOVE_NOTEBOOK'; notebookId: string }
   | { type: 'SET_ACTIVE_NOTEBOOK'; notebookId: string | null }
@@ -47,6 +51,20 @@ function appReducer(state: AppState, action: Action): AppState {
         ...state,
         servers: state.servers.map(s =>
           s.id === action.serverId ? { ...s, ...action.updates } : s
+        ),
+      };
+
+    case 'ADD_SAVED_CONNECTION':
+      return { ...state, savedConnections: [...state.savedConnections, action.savedConnection] };
+
+    case 'REMOVE_SAVED_CONNECTION':
+      return { ...state, savedConnections: state.savedConnections.filter(c => c.id !== action.savedConnectionId) };
+
+    case 'UPDATE_SAVED_CONNECTION':
+      return {
+        ...state,
+        savedConnections: state.savedConnections.map(c =>
+          c.id === action.savedConnectionId ? { ...c, ...action.updates } : c
         ),
       };
 
@@ -141,6 +159,10 @@ interface AppContextType {
   // Servers
   connectServer: (config: ServerConfig, name?: string) => Promise<ServerConnection>;
   disconnectServer: (serverId: string) => Promise<void>;
+  // Saved Connections
+  saveConnection: (config: ServerConfig, name: string) => SavedConnection;
+  deleteSavedConnection: (savedConnectionId: string) => void;
+  connectFromSaved: (savedConnectionId: string) => Promise<ServerConnection>;
   // Notebooks
   createNotebook: (name?: string) => Notebook;
   deleteNotebook: (notebookId: string) => void;
@@ -164,30 +186,98 @@ const AppContext = createContext<AppContextType | null>(null);
 // Provider
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
+  const isFirstRender = useRef(true);
+  const hasHydrated = useRef(false);
+  const hasAutoConnected = useRef(false);
 
   // Load state from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem('gizmosql-ui-state');
+    let savedConnections: SavedConnection[] = [];
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         // Restore dates
-        parsed.notebooks = parsed.notebooks.map((n: Notebook) => ({
+        parsed.notebooks = (parsed.notebooks || []).map((n: Notebook) => ({
           ...n,
           createdAt: new Date(n.createdAt),
           updatedAt: new Date(n.updatedAt),
         }));
         // Clear server sessions (they're not valid after restart)
         parsed.servers = [];
+        // Ensure savedConnections exists (migration from older versions)
+        parsed.savedConnections = parsed.savedConnections || [];
+        savedConnections = parsed.savedConnections;
         dispatch({ type: 'LOAD_STATE', state: parsed });
       } catch (e) {
         console.error('Failed to load saved state:', e);
       }
     }
+    // Mark as hydrated after a tick to ensure state has updated
+    setTimeout(() => {
+      hasHydrated.current = true;
+    }, 0);
+
+    // Auto-reconnect saved connections that have passwords (guard against StrictMode double-run)
+    if (hasAutoConnected.current) {
+      return;
+    }
+    hasAutoConnected.current = true;
+
+    (async () => {
+      const connectedServers = new Set<string>();
+      for (const saved of savedConnections) {
+        // Only auto-connect if password is saved
+        if (!saved.password) {
+          continue;
+        }
+        // De-dupe by host:port:username
+        const key = `${saved.host}:${saved.port}:${saved.username}`;
+        if (connectedServers.has(key)) {
+          continue;
+        }
+        try {
+          const response = await api.connect({
+            host: saved.host,
+            port: saved.port,
+            username: saved.username,
+            password: saved.password,
+            useTls: saved.useTls,
+            skipTlsVerify: saved.skipTlsVerify,
+            queryTimeout: saved.queryTimeout,
+          });
+          const server: ServerConnection = {
+            id: crypto.randomUUID(),
+            name: saved.name,
+            host: saved.host,
+            port: saved.port,
+            username: saved.username,
+            useTls: saved.useTls,
+            skipTlsVerify: saved.skipTlsVerify,
+            queryTimeout: saved.queryTimeout,
+            sessionId: response.sessionId,
+            status: 'connected',
+          };
+          dispatch({ type: 'ADD_SERVER', server });
+          connectedServers.add(key);
+        } catch {
+          // Connection failed, skip silently
+        }
+      }
+    })();
   }, []);
 
-  // Save state to localStorage on change
+  // Save state to localStorage on change (but only after hydration)
   useEffect(() => {
+    // Skip the very first render
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    // Don't save until hydration is complete
+    if (!hasHydrated.current) {
+      return;
+    }
     const toSave = {
       ...state,
       // Don't save server sessions
@@ -221,6 +311,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       username: config.username,
       useTls: config.useTls,
       skipTlsVerify: config.skipTlsVerify,
+      queryTimeout: config.queryTimeout,
       sessionId: response.sessionId,
       status: 'connected',
     };
@@ -248,6 +339,89 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     dispatch({ type: 'REMOVE_SERVER', serverId });
   }, [state.servers]);
+
+  // Saved connection actions
+  const saveConnection = useCallback((config: ServerConfig, name: string): SavedConnection => {
+    // Check if a saved connection with same host/port/username already exists
+    const existing = state.savedConnections.find(
+      c => c.host === config.host && c.port === config.port && c.username === config.username
+    );
+    if (existing) {
+      // Update existing, but preserve password if new config doesn't have one
+      const updates = {
+        ...config,
+        name,
+        password: config.password || existing.password, // Keep existing password if not provided
+      };
+      dispatch({
+        type: 'UPDATE_SAVED_CONNECTION',
+        savedConnectionId: existing.id,
+        updates,
+      });
+      return { ...existing, ...updates };
+    }
+    // Create new
+    const savedConnection: SavedConnection = {
+      id: generateId(),
+      name,
+      host: config.host,
+      port: config.port,
+      username: config.username,
+      password: config.password,
+      useTls: config.useTls,
+      skipTlsVerify: config.skipTlsVerify,
+      queryTimeout: config.queryTimeout,
+    };
+    dispatch({ type: 'ADD_SAVED_CONNECTION', savedConnection });
+    return savedConnection;
+  }, [state.savedConnections]);
+
+  const deleteSavedConnection = useCallback((savedConnectionId: string) => {
+    dispatch({ type: 'REMOVE_SAVED_CONNECTION', savedConnectionId });
+  }, []);
+
+  const connectFromSaved = useCallback(async (savedConnectionId: string): Promise<ServerConnection> => {
+    const saved = state.savedConnections.find(c => c.id === savedConnectionId);
+    if (!saved) {
+      throw new Error('Saved connection not found');
+    }
+    const config: ServerConfig = {
+      host: saved.host,
+      port: saved.port,
+      username: saved.username,
+      password: saved.password,
+      useTls: saved.useTls,
+      skipTlsVerify: saved.skipTlsVerify,
+      queryTimeout: saved.queryTimeout,
+    };
+    const response = await api.connect(config);
+    const server: ServerConnection = {
+      id: generateId(),
+      name: saved.name,
+      host: saved.host,
+      port: saved.port,
+      username: saved.username,
+      useTls: saved.useTls,
+      skipTlsVerify: saved.skipTlsVerify,
+      queryTimeout: saved.queryTimeout,
+      sessionId: response.sessionId,
+      status: 'connected',
+    };
+    dispatch({ type: 'ADD_SERVER', server });
+
+    // If this is the only server, auto-assign it to all cells without a server
+    if (state.servers.length === 0) {
+      state.notebooks.forEach(notebook => {
+        notebook.cells.forEach(cell => {
+          if (!cell.serverId) {
+            dispatch({ type: 'UPDATE_CELL', notebookId: notebook.id, cellId: cell.id, updates: { serverId: server.id } });
+          }
+        });
+      });
+    }
+
+    return server;
+  }, [state.savedConnections, state.servers.length, state.notebooks]);
 
   // Notebook actions
   const createNotebook = useCallback((name?: string): Notebook => {
@@ -405,6 +579,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     toggleTheme,
     connectServer,
     disconnectServer,
+    saveConnection,
+    deleteSavedConnection,
+    connectFromSaved,
     createNotebook,
     deleteNotebook,
     renameNotebook,

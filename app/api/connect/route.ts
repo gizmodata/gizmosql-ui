@@ -4,7 +4,7 @@ import { setConnection } from '@/lib/connections';
 
 export async function POST(request: NextRequest) {
   try {
-    const { host, port, username, password, useTls, skipTlsVerify } = await request.json();
+    const { host, port, username, password, useTls, skipTlsVerify, queryTimeout } = await request.json();
 
     if (!host) {
       return NextResponse.json({ error: 'Host is required' }, { status: 400 });
@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
       password,
       useTls: useTls !== false, // Default to true
       skipTlsVerify: skipTlsVerify || false,
+      queryTimeout: queryTimeout || 0, // 0 = unlimited
     });
 
     await service.connect();

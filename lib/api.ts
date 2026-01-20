@@ -7,6 +7,7 @@ export interface ConnectionConfig {
   password?: string;
   useTls: boolean;
   skipTlsVerify: boolean;
+  queryTimeout?: number; // Timeout in seconds (0 or undefined = unlimited)
 }
 
 export interface ConnectResponse {
