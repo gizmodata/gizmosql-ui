@@ -43,6 +43,7 @@ jobs:
         run: |
           mkdir -p release
           cp artifacts/gizmosql-ui-linux-x64/gizmosql-ui release/gizmosql-ui-linux-x64
+          cp artifacts/gizmosql-ui-linux-arm64/gizmosql-ui release/gizmosql-ui-linux-arm64
           cp artifacts/gizmosql-ui-macos-arm64/gizmosql-ui release/gizmosql-ui-macos-arm64
           cp artifacts/gizmosql-ui-win-x64.exe/gizmosql-ui.exe release/gizmosql-ui-win-x64.exe
           cd release
@@ -54,6 +55,7 @@ jobs:
           generate_release_notes: true
           files: |
             release/gizmosql-ui-linux-x64
+            release/gizmosql-ui-linux-arm64
             release/gizmosql-ui-macos-arm64
             release/gizmosql-ui-win-x64.exe
             release/checksums.txt
@@ -65,8 +67,10 @@ jobs:
           # Extract version from tag (removes 'v' prefix)
           VERSION=${GITHUB_REF#refs/tags/v}
 
-          # Get SHA256 of macOS binary
-          SHA256=$(sha256sum release/gizmosql-ui-macos-arm64 | cut -d' ' -f1)
+          # Get SHA256 of all binaries
+          SHA256_MACOS_ARM64=$(sha256sum release/gizmosql-ui-macos-arm64 | cut -d' ' -f1)
+          SHA256_LINUX_X64=$(sha256sum release/gizmosql-ui-linux-x64 | cut -d' ' -f1)
+          SHA256_LINUX_ARM64=$(sha256sum release/gizmosql-ui-linux-arm64 | cut -d' ' -f1)
 
           # Clone the tap repo
           git clone https://x-access-token:${GH_TOKEN}@github.com/gizmodata/homebrew-tap.git tap
@@ -82,11 +86,29 @@ jobs:
             '' \
             '  on_macos do' \
             '    if Hardware::CPU.arm?' \
-            "      url \"https://github.com/gizmodata/gizmosql-ui/releases/download/v#{version}/gizmosql-ui-macos-arm64\"" \
-            "      sha256 \"${SHA256}\"" \
+            '      url "https://github.com/gizmodata/gizmosql-ui/releases/download/v#{version}/gizmosql-ui-macos-arm64"' \
+            "      sha256 \"${SHA256_MACOS_ARM64}\"" \
             '' \
             '      def install' \
             '        bin.install "gizmosql-ui-macos-arm64" => "gizmosql-ui"' \
+            '      end' \
+            '    end' \
+            '  end' \
+            '' \
+            '  on_linux do' \
+            '    if Hardware::CPU.arm?' \
+            '      url "https://github.com/gizmodata/gizmosql-ui/releases/download/v#{version}/gizmosql-ui-linux-arm64"' \
+            "      sha256 \"${SHA256_LINUX_ARM64}\"" \
+            '' \
+            '      def install' \
+            '        bin.install "gizmosql-ui-linux-arm64" => "gizmosql-ui"' \
+            '      end' \
+            '    elsif Hardware::CPU.intel?' \
+            '      url "https://github.com/gizmodata/gizmosql-ui/releases/download/v#{version}/gizmosql-ui-linux-x64"' \
+            "      sha256 \"${SHA256_LINUX_X64}\"" \
+            '' \
+            '      def install' \
+            '        bin.install "gizmosql-ui-linux-x64" => "gizmosql-ui"' \
             '      end' \
             '    end' \
             '  end' \
@@ -98,7 +120,7 @@ jobs:
             '      To start GizmoSQL UI:' \
             '        gizmosql-ui' \
             '' \
-            '      The server runs at http://localhost:4821 by default.' \
+            '      The server runs at http://localhost:3000 by default.' \
             '      Set PORT environment variable to use a different port.' \
             '    EOS' \
             '  end' \

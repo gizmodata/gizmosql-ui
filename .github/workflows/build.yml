@@ -23,6 +23,10 @@ jobs:
             target: linux
             artifact: gizmosql-ui-linux-x64
             build-output: dist/gizmosql-ui
+          - os: ubuntu-24.04-arm
+            target: linux-arm64
+            artifact: gizmosql-ui-linux-arm64
+            build-output: dist/gizmosql-ui
           - os: macos-latest
             target: macos
             artifact: gizmosql-ui-macos-arm64

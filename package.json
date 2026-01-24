@@ -1,6 +1,6 @@
 {
   "name": "gizmosql-ui",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "GizmoSQL UI - A web-based SQL interface for GizmoSQL servers",
   "private": true,
   "bin": "launcher.js",
@@ -14,6 +14,7 @@
     "package:prepare": "pnpm build && cp -r public .next/standalone/ && cp scripts/launcher.js .next/standalone/ && cp -r .next/static .next/standalone/.next/ && cd .next/standalone && sed -i.bak 's/process.chdir(__dirname)//' server.js && rm server.js.bak && chmod +x launcher.js",
     "package:macos": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node22-macos-arm64 --compress Brotli",
     "package:linux": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node22-linux-x64 --compress Brotli",
+    "package:linux-arm64": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node22-linux-arm64 --compress Brotli",
     "package:windows": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node22-win-x64 --compress Brotli",
     "clean": "rm -rf dist .next node_modules"
   },
@@ -54,6 +55,7 @@
     "targets": [
       "node22-macos-arm64",
       "node22-linux-x64",
+      "node22-linux-arm64",
       "node22-win-x64"
     ],
     "outputPath": "../../dist"
