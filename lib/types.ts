@@ -1,4 +1,4 @@
-// Instrumentation metadata (discovered via GetSqlInfo)
+// Instrumentation metadata (discovered via SQL functions)
 export interface InstrumentationInfo {
   enabled: boolean;
   catalog: string;

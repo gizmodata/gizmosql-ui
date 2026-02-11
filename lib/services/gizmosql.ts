@@ -1,4 +1,4 @@
-import { FlightSQLClient, GIZMOSQL_SQL_INFO } from '@gizmodata/gizmosql-client';
+import { FlightSQLClient } from '@gizmodata/gizmosql-client';
 import { InstrumentationInfo } from '@/lib/types';
 
 export interface GizmoSQLConfig {
@@ -218,24 +218,21 @@ export class GizmoSQLService {
 
     return this.queueQuery(async () => {
       try {
-        const sqlInfoIds = [
-          GIZMOSQL_SQL_INFO.INSTRUMENTATION_ENABLED,
-          GIZMOSQL_SQL_INFO.INSTRUMENTATION_CATALOG,
-          GIZMOSQL_SQL_INFO.INSTRUMENTATION_SCHEMA,
-        ];
-        const info = await this.client!.getSqlInfo(sqlInfoIds);
+        const sql =
+          'SELECT GIZMOSQL_INSTRUMENTATION_ENABLED() AS enabled,' +
+          ' GIZMOSQL_INSTRUMENTATION_CATALOG() AS catalog,' +
+          ' GIZMOSQL_INSTRUMENTATION_SCHEMA() AS schema';
+        const table = await this.client!.execute(sql);
+        const rows = table.toArray();
 
-        const enabled = info.get(GIZMOSQL_SQL_INFO.INSTRUMENTATION_ENABLED);
-        const catalog = info.get(GIZMOSQL_SQL_INFO.INSTRUMENTATION_CATALOG);
-        const schema = info.get(GIZMOSQL_SQL_INFO.INSTRUMENTATION_SCHEMA);
-
-        if (typeof enabled !== 'boolean') {
-          // Server doesn't support custom SqlInfo IDs (older version)
+        if (rows.length === 0) {
           return null;
         }
 
-        const catalogStr = String(catalog || '');
-        const schemaStr = String(schema || '');
+        const row = rows[0];
+        const enabled = Boolean(row.enabled);
+        const catalogStr = String(row.catalog || '');
+        const schemaStr = String(row.schema || '');
 
         return {
           enabled,
@@ -244,7 +241,7 @@ export class GizmoSQLService {
           qualifiedPrefix: catalogStr && schemaStr ? `${catalogStr}.${schemaStr}` : '',
         };
       } catch {
-        // Older servers may not support GetSqlInfo with custom IDs
+        // Older servers may not support GIZMOSQL_INSTRUMENTATION_*() functions
         return null;
       }
     });
