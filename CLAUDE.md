@@ -97,9 +97,18 @@ export async function POST(request: NextRequest) {
 - **Instrumentation Discovery**: Uses `GIZMOSQL_INSTRUMENTATION_ENABLED()`, `GIZMOSQL_INSTRUMENTATION_CATALOG()`, `GIZMOSQL_INSTRUMENTATION_SCHEMA()` SQL functions
 - **OAuth/SSO**: Server-side OAuth code exchange flow via GizmoSQL server
 
+## Version Bumping
+
+When releasing a new version, **all** of the following must be updated to match:
+- `package.json` — `version` field
+- `app/page.tsx` — version displayed in the header/banner (must match `package.json`)
+- `scripts/launcher.js` — fallback `VERSION` constant
+
 ## Pre-Commit Checklist
 
 - [ ] `pnpm lint` passes
 - [ ] `pnpm build` succeeds
 - [ ] Update `CHANGELOG.md` for user-facing changes
 - [ ] Update version in `package.json` if releasing
+- [ ] Ensure banner version in `app/page.tsx` matches `package.json` version
+- [ ] Ensure `scripts/launcher.js` VERSION matches `package.json` version
