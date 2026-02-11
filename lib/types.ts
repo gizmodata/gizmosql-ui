@@ -1,3 +1,11 @@
+// Instrumentation metadata (discovered via GetSqlInfo)
+export interface InstrumentationInfo {
+  enabled: boolean;
+  catalog: string;
+  schema: string;
+  qualifiedPrefix: string;  // e.g., "_gizmosql_instr.main"
+}
+
 // Server types
 export interface ServerConnection {
   id: string;
@@ -5,12 +13,16 @@ export interface ServerConnection {
   host: string;
   port: number;
   username?: string;
+  authType?: 'password' | 'oauth';
+  oauthServerPort?: number;
+  oauthUseTls?: boolean;
   useTls: boolean;
   skipTlsVerify: boolean;
   queryTimeout?: number; // Timeout in seconds (0 or undefined = unlimited)
   sessionId: string;
   status: 'connected' | 'disconnected' | 'error';
   errorMessage?: string;
+  instrumentationInfo?: InstrumentationInfo;
 }
 
 export interface ServerConfig {
@@ -18,6 +30,10 @@ export interface ServerConfig {
   port: number;
   username?: string;
   password?: string;
+  authType?: 'password' | 'oauth';
+  oauthServerPort?: number;
+  oauthUseTls?: boolean;
+  oauthToken?: string;
   useTls: boolean;
   skipTlsVerify: boolean;
   queryTimeout?: number; // Timeout in seconds (0 or undefined = unlimited)
@@ -31,6 +47,10 @@ export interface SavedConnection {
   port: number;
   username?: string;
   password?: string;
+  authType?: 'password' | 'oauth';
+  oauthServerPort?: number;
+  oauthUseTls?: boolean;
+  oauthToken?: string;
   useTls: boolean;
   skipTlsVerify: boolean;
   queryTimeout?: number; // Timeout in seconds (0 or undefined = unlimited)

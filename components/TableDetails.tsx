@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { useApp } from '@/context/AppContext';
+import { TableDetailsModal } from './TableDetailsModal';
 import styles from './TableDetails.module.css';
 
 // Dynamic import for Monaco Editor (client-side only)
@@ -54,6 +55,7 @@ export function TableDetails({ serverId, catalog, schema, tableName }: TableDeta
   const [sortBy, setSortBy] = useState<SortType>('original');
   const [showTypes, setShowTypes] = useState(true);
   const [showDistributions, setShowDistributions] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const server = serverId ? state.servers.find(s => s.id === serverId) : null;
 
@@ -306,6 +308,13 @@ export function TableDetails({ serverId, catalog, schema, tableName }: TableDeta
             <span className={styles.tableRowCount}>{formatNumber(rowCount)} rows</span>
           )}
           <button
+            className={`btn btn-ghost btn-icon ${styles.expandBtn}`}
+            onClick={() => setIsExpanded(true)}
+            title="Expand"
+          >
+            ⤢
+          </button>
+          <button
             className={`btn btn-ghost btn-icon ${styles.optionsBtn}`}
             onClick={() => setShowOptions(!showOptions)}
             title="Options"
@@ -489,6 +498,17 @@ export function TableDetails({ serverId, catalog, schema, tableName }: TableDeta
           </div>
         )}
       </div>
+
+      {isExpanded && serverId && catalog && schema && tableName && (
+        <TableDetailsModal
+          serverId={serverId}
+          catalog={catalog}
+          schema={schema}
+          tableName={tableName}
+          initialTab={activeTab}
+          onClose={() => setIsExpanded(false)}
+        />
+      )}
     </div>
   );
 }

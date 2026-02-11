@@ -45,6 +45,11 @@
   font-size: 18px;
 }
 
+.adminBtn {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
 .connectBtn {
   padding: 8px 16px;
 }

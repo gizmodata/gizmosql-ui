@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useReducer, useCallback, ReactNode, useEffect, useRef } from 'react';
-import { AppState, Theme, ServerConnection, ServerConfig, SavedConnection, Notebook, Cell, CellResult } from '@/lib/types';
+import { AppState, Theme, ServerConnection, ServerConfig, SavedConnection, Notebook, Cell, CellResult, InstrumentationInfo } from '@/lib/types';
 import { api } from '@/lib/api';
 
 // Generate unique IDs
@@ -227,12 +227,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     (async () => {
       const connectedServers = new Set<string>();
       for (const saved of savedConnections) {
-        // Only auto-connect if password is saved
-        if (!saved.password) {
+        const isOAuth = saved.authType === 'oauth';
+        // Only auto-connect if password is saved (or OAuth token is stored)
+        if (!isOAuth && !saved.password) {
           continue;
         }
-        // De-dupe by host:port:username
-        const key = `${saved.host}:${saved.port}:${saved.username}`;
+        if (isOAuth && !saved.oauthToken) {
+          continue;
+        }
+        // De-dupe by host:port:authType (or host:port:username for password)
+        const key = isOAuth
+          ? `${saved.host}:${saved.port}:oauth`
+          : `${saved.host}:${saved.port}:${saved.username}`;
         if (connectedServers.has(key)) {
           continue;
         }
@@ -240,8 +246,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           const response = await api.connect({
             host: saved.host,
             port: saved.port,
-            username: saved.username,
-            password: saved.password,
+            username: isOAuth ? 'token' : saved.username,
+            password: isOAuth ? saved.oauthToken : saved.password,
             useTls: saved.useTls,
             skipTlsVerify: saved.skipTlsVerify,
             queryTimeout: saved.queryTimeout,
@@ -251,7 +257,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
             name: saved.name,
             host: saved.host,
             port: saved.port,
-            username: saved.username,
+            username: isOAuth ? undefined : saved.username,
+            authType: saved.authType,
+            oauthServerPort: saved.oauthServerPort,
+            oauthUseTls: saved.oauthUseTls,
             useTls: saved.useTls,
             skipTlsVerify: saved.skipTlsVerify,
             queryTimeout: saved.queryTimeout,
@@ -260,8 +269,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
           };
           dispatch({ type: 'ADD_SERVER', server });
           connectedServers.add(key);
+          // Fetch server metadata (non-blocking)
+          api.getServerInfo(server.sessionId).then(data => {
+            dispatch({
+              type: 'UPDATE_SERVER',
+              serverId: server.id,
+              updates: { instrumentationInfo: data.instrumentationInfo },
+            });
+          }).catch(() => { /* non-critical */ });
         } catch {
-          // Connection failed, skip silently
+          // Connection failed, skip silently (e.g., expired OAuth token)
         }
       }
     })();
@@ -300,6 +317,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'SET_THEME', theme: state.theme === 'light' ? 'dark' : 'light' });
   }, [state.theme]);
 
+  // Fetch server metadata (instrumentation info) — non-blocking
+  const fetchServerInfo = useCallback(async (serverId: string, sessionId: string) => {
+    try {
+      const data = await api.getServerInfo(sessionId);
+      dispatch({
+        type: 'UPDATE_SERVER',
+        serverId,
+        updates: { instrumentationInfo: data.instrumentationInfo },
+      });
+    } catch {
+      // Non-critical — failure doesn't prevent connection
+    }
+  }, []);
+
   // Server actions
   const connectServer = useCallback(async (config: ServerConfig, name?: string): Promise<ServerConnection> => {
     const response = await api.connect(config);
@@ -308,7 +339,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       name: name || `${config.host}:${config.port}`,
       host: config.host,
       port: config.port,
-      username: config.username,
+      username: config.authType === 'oauth' ? undefined : config.username,
+      authType: config.authType,
+      oauthServerPort: config.oauthServerPort,
+      oauthUseTls: config.oauthUseTls,
       useTls: config.useTls,
       skipTlsVerify: config.skipTlsVerify,
       queryTimeout: config.queryTimeout,
@@ -316,6 +350,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       status: 'connected',
     };
     dispatch({ type: 'ADD_SERVER', server });
+
+    // Fetch server metadata (non-blocking)
+    fetchServerInfo(server.id, server.sessionId);
 
     // If this is the only server, auto-assign it to all cells without a server
     if (state.servers.length === 0) {
@@ -329,7 +366,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     return server;
-  }, [state.servers.length, state.notebooks]);
+  }, [state.servers.length, state.notebooks, fetchServerInfo]);
 
   const disconnectServer = useCallback(async (serverId: string) => {
     const server = state.servers.find(s => s.id === serverId);
@@ -342,16 +379,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // Saved connection actions
   const saveConnection = useCallback((config: ServerConfig, name: string): SavedConnection => {
-    // Check if a saved connection with same host/port/username already exists
-    const existing = state.savedConnections.find(
-      c => c.host === config.host && c.port === config.port && c.username === config.username
-    );
+    // De-dup by host:port:authType (OAuth) or host:port:username (password)
+    const existing = state.savedConnections.find(c => {
+      if (config.authType === 'oauth') {
+        return c.host === config.host && c.port === config.port && c.authType === 'oauth';
+      }
+      return c.host === config.host && c.port === config.port && c.username === config.username && c.authType !== 'oauth';
+    });
     if (existing) {
       // Update existing, but preserve password if new config doesn't have one
       const updates = {
         ...config,
         name,
-        password: config.password || existing.password, // Keep existing password if not provided
+        password: config.password || existing.password,
+        oauthToken: config.oauthToken || existing.oauthToken,
       };
       dispatch({
         type: 'UPDATE_SAVED_CONNECTION',
@@ -366,8 +407,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       name,
       host: config.host,
       port: config.port,
-      username: config.username,
-      password: config.password,
+      username: config.authType === 'oauth' ? undefined : config.username,
+      password: config.authType === 'oauth' ? undefined : config.password,
+      authType: config.authType,
+      oauthServerPort: config.oauthServerPort,
+      oauthUseTls: config.oauthUseTls,
+      oauthToken: config.oauthToken,
       useTls: config.useTls,
       skipTlsVerify: config.skipTlsVerify,
       queryTimeout: config.queryTimeout,
@@ -385,11 +430,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!saved) {
       throw new Error('Saved connection not found');
     }
+    // For OAuth connections, use stored token via Basic Auth
+    const isOAuth = saved.authType === 'oauth';
     const config: ServerConfig = {
       host: saved.host,
       port: saved.port,
-      username: saved.username,
-      password: saved.password,
+      username: isOAuth ? 'token' : saved.username,
+      password: isOAuth ? saved.oauthToken : saved.password,
+      authType: saved.authType,
+      oauthServerPort: saved.oauthServerPort,
+      oauthUseTls: saved.oauthUseTls,
+      oauthToken: saved.oauthToken,
       useTls: saved.useTls,
       skipTlsVerify: saved.skipTlsVerify,
       queryTimeout: saved.queryTimeout,
@@ -400,7 +451,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       name: saved.name,
       host: saved.host,
       port: saved.port,
-      username: saved.username,
+      username: isOAuth ? undefined : saved.username,
+      authType: saved.authType,
+      oauthServerPort: saved.oauthServerPort,
+      oauthUseTls: saved.oauthUseTls,
       useTls: saved.useTls,
       skipTlsVerify: saved.skipTlsVerify,
       queryTimeout: saved.queryTimeout,
@@ -408,6 +462,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       status: 'connected',
     };
     dispatch({ type: 'ADD_SERVER', server });
+
+    // Fetch server metadata (non-blocking)
+    fetchServerInfo(server.id, server.sessionId);
 
     // If this is the only server, auto-assign it to all cells without a server
     if (state.servers.length === 0) {
@@ -421,7 +478,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     return server;
-  }, [state.savedConnections, state.servers.length, state.notebooks]);
+  }, [state.savedConnections, state.servers.length, state.notebooks, fetchServerInfo]);
 
   // Notebook actions
   const createNotebook = useCallback((name?: string): Notebook => {

@@ -8,6 +8,7 @@ import { NotebookView } from '@/components/NotebookView';
 import { ResultSchema } from '@/components/ResultSchema';
 import { AddServerDialog } from '@/components/AddServerDialog';
 import { TableDetails } from '@/components/TableDetails';
+import { AdminScreen } from '@/components/AdminScreen';
 import Image from 'next/image';
 import styles from './page.module.css';
 
@@ -21,6 +22,7 @@ interface SelectedTable {
 export default function Home() {
   const { state, toggleTheme, updateCellServer, executeCell } = useApp();
   const [showAddServer, setShowAddServer] = useState(false);
+  const [showAdminScreen, setShowAdminScreen] = useState(false);
   const [selectedCellId, setSelectedCellId] = useState<string | null>(null);
   const [selectedTable, setSelectedTable] = useState<SelectedTable | null>(null);
   const [leftSidebarWidth, setLeftSidebarWidth] = useState(260);
@@ -156,6 +158,13 @@ export default function Home() {
             {state.theme === 'light' ? '🌙' : '☀️'}
           </button>
           <button
+            className={`btn btn-ghost ${styles.adminBtn}`}
+            onClick={() => setShowAdminScreen(true)}
+            title="Session Admin"
+          >
+            Admin
+          </button>
+          <button
             className={`btn btn-primary ${styles.connectBtn}`}
             onClick={() => setShowAddServer(true)}
           >
@@ -208,6 +217,11 @@ export default function Home() {
           }}
           onSuccess={handleServerConnected}
         />
+      )}
+
+      {/* Admin Screen */}
+      {showAdminScreen && (
+        <AdminScreen onClose={() => setShowAdminScreen(false)} />
       )}
     </div>
   );

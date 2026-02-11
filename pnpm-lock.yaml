@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@gizmodata/gizmosql-client':
-        specifier: ^1.2.10
-        version: 1.2.10
+        specifier: ^1.4.0
+        version: 1.4.0
       '@monaco-editor/react':
         specifier: ^4.7.0
         version: 4.7.0(monaco-editor@0.55.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -75,8 +75,8 @@ packages:
     resolution: {integrity: sha512-qQ5m48eI/MFLQ5PxQj4PFaprjyCTLI37ElWMmNs0K8Lk3dVeOdNpB3ks8jc7yM5CDmVC73eMVk/trk3fgmrUpA==}
     engines: {node: '>=6.9.0'}
 
-  '@gizmodata/gizmosql-client@1.2.10':
-    resolution: {integrity: sha512-n5YHxSV9zmk7vqGWofGoV3exivoYJ/Tp/Htej2B+V+aQAIl9kg7GO7DnfnUMajVKN/rWqvcI40vs5URbN8DLyw==}
+  '@gizmodata/gizmosql-client@1.4.0':
+    resolution: {integrity: sha512-9j5DTl4FiUd3AXJLCGCKqseSBVlautd6sc9uBgXogF1wHy4+ZTR4SOAfgkQd69VXaTVfm+GSe3auEQ04+c6Xgw==}
     engines: {node: '>=20.0.0'}
 
   '@grpc/grpc-js@1.14.3':
@@ -898,7 +898,7 @@ snapshots:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.28.5
 
-  '@gizmodata/gizmosql-client@1.2.10':
+  '@gizmodata/gizmosql-client@1.4.0':
     dependencies:
       '@grpc/grpc-js': 1.14.3
       apache-arrow: 21.1.0

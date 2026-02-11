@@ -1,3 +1,5 @@
+import { InstrumentationInfo } from '@/lib/types';
+
 const API_BASE = '/api';
 
 export interface ConnectionConfig {
@@ -5,6 +7,10 @@ export interface ConnectionConfig {
   port: number;
   username?: string;
   password?: string;
+  authType?: 'password' | 'oauth';
+  oauthServerPort?: number;
+  oauthUseTls?: boolean;
+  oauthToken?: string;
   useTls: boolean;
   skipTlsVerify: boolean;
   queryTimeout?: number; // Timeout in seconds (0 or undefined = unlimited)
@@ -140,6 +146,19 @@ class ApiClient {
     const queryString = params.toString() ? `?${params.toString()}` : '';
     const response = await this.request<{ tables: TableInfo[] }>('GET', `/tables${queryString}`);
     return response.tables;
+  }
+
+  async getServerInfo(sessionId: string): Promise<{ instrumentationInfo: InstrumentationInfo }> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'X-Session-Id': sessionId,
+    };
+
+    const response = await fetch(`${API_BASE}/server-info`, { method: 'GET', headers });
+    if (!response.ok) {
+      return { instrumentationInfo: { enabled: false, catalog: '', schema: '', qualifiedPrefix: '' } };
+    }
+    return response.json();
   }
 
   async getColumns(catalog?: string, schema?: string, table?: string): Promise<ColumnInfo[]> {

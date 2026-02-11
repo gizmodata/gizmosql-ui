@@ -1,4 +1,5 @@
-import { FlightSQLClient } from '@gizmodata/gizmosql-client';
+import { FlightSQLClient, GIZMOSQL_SQL_INFO } from '@gizmodata/gizmosql-client';
+import { InstrumentationInfo } from '@/lib/types';
 
 export interface GizmoSQLConfig {
   host: string;
@@ -207,6 +208,45 @@ export class GizmoSQLService {
         type: row.data_type as string,
         position: row.ordinal_position as number,
       }));
+    });
+  }
+
+  async getInstrumentationMetadata(): Promise<InstrumentationInfo | null> {
+    if (!this.client) {
+      throw new Error('Not connected to GizmoSQL server');
+    }
+
+    return this.queueQuery(async () => {
+      try {
+        const sqlInfoIds = [
+          GIZMOSQL_SQL_INFO.INSTRUMENTATION_ENABLED,
+          GIZMOSQL_SQL_INFO.INSTRUMENTATION_CATALOG,
+          GIZMOSQL_SQL_INFO.INSTRUMENTATION_SCHEMA,
+        ];
+        const info = await this.client!.getSqlInfo(sqlInfoIds);
+
+        const enabled = info.get(GIZMOSQL_SQL_INFO.INSTRUMENTATION_ENABLED);
+        const catalog = info.get(GIZMOSQL_SQL_INFO.INSTRUMENTATION_CATALOG);
+        const schema = info.get(GIZMOSQL_SQL_INFO.INSTRUMENTATION_SCHEMA);
+
+        if (typeof enabled !== 'boolean') {
+          // Server doesn't support custom SqlInfo IDs (older version)
+          return null;
+        }
+
+        const catalogStr = String(catalog || '');
+        const schemaStr = String(schema || '');
+
+        return {
+          enabled,
+          catalog: catalogStr,
+          schema: schemaStr,
+          qualifiedPrefix: catalogStr && schemaStr ? `${catalogStr}.${schemaStr}` : '',
+        };
+      } catch {
+        // Older servers may not support GetSqlInfo with custom IDs
+        return null;
+      }
     });
   }
 
