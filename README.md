@@ -29,7 +29,7 @@ Download the appropriate executable for your platform from the [releases page](h
 ./gizmosql-ui
 ```
 
-The UI will automatically open in your default browser at `http://localhost:4821`.
+The UI will automatically open in your default browser at `http://localhost:3000`.
 
 ### Building from Source
 
@@ -77,7 +77,7 @@ The executables will be created in `dist/`. Run them directly:
 dist\gizmosql-ui-win-x64.exe     # Windows
 ```
 
-The executable will start the server and automatically open your browser to `http://localhost:4821`.
+The executable will start the server and automatically open your browser to `http://localhost:3000`.
 
 ### Starting a GizmoSQL Server (Optional)
 
