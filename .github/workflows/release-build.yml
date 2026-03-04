@@ -31,6 +31,9 @@ jobs:
     needs: build
     runs-on: macos-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Download unsigned binary
         uses: actions/download-artifact@v4
         with:
@@ -46,6 +49,7 @@ jobs:
           password: ${{ secrets.APPLE_ID_PASSWORD }}
           apple-team-id: ${{ secrets.APPLE_TEAM_ID }}
           app-path: unsigned/gizmosql-ui
+          entitlements-path: macos/entitlements.plist
 
       - name: Upload signed binary
         uses: actions/upload-artifact@v4
