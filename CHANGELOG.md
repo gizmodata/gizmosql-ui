@@ -5,6 +5,26 @@ All notable changes to GizmoSQL UI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2026-03-04
+
+### Added
+
+- **Windows MSI installer** with Desktop shortcut, Start Menu entry, and PATH integration
+- **macOS code signing and notarization** for release builds (Apple Developer ID)
+- **Windows code signing** for release builds (Azure Key Vault + AzureSignTool)
+- WiX v4 installer definition (`installer/GizmoSQLUI.wxs`)
+
+### Changed
+
+- Upgraded **Next.js** from 14.2 to 16.1 (Turbopack for dev, webpack for production builds)
+- Upgraded **React** from 18.3 to 19.2
+- Upgraded all dependencies to latest compatible versions
+- Migrated ESLint to flat config (`eslint.config.mjs`) — `next lint` removed in Next.js 16
+- Migrated `serverComponentsExternalPackages` to top-level `serverExternalPackages`
+- Cross-platform standalone build preparation (`scripts/prepare-standalone.js`) replacing Unix shell commands
+- Production builds use `next build --webpack` for pkg compatibility with externalized gRPC packages
+- CI release workflow now includes signing and MSI jobs between build and release
+
 ## [2.4.0] - 2026-02-11
 
 ### Added

@@ -21,6 +21,15 @@ brew install gizmodata/tap/gizmosql-ui
 gizmosql-ui
 ```
 
+### Windows (MSI Installer)
+
+Download `GizmoSQL-UI-x64.msi` from the [releases page](https://github.com/gizmodata/gizmosql-ui/releases) and run the installer.
+
+GizmoSQL UI will be available from:
+- Desktop shortcut
+- Start Menu → GizmoSQL UI
+- Command line: `gizmosql-ui` (added to PATH)
+
 ### Using Pre-built Executable
 The development server runs at http://localhost:3000
 
@@ -81,7 +90,7 @@ The executable will start the server and automatically open your browser to `htt
 
 ### Starting a GizmoSQL Server (Optional)
 
-If you don't have a GizmoSQL server running, you can start one using Docker:
+If you don't have a GizmoSQL server running, you can start one using Docker.  Note that we use INIT_SQL_COMMANDS to generate some TPC-H tables (and data) for the demo:
 
 ```bash
 docker run --name gizmosql \
@@ -91,9 +100,10 @@ docker run --name gizmosql \
            --init \
            --publish 31337:31337 \
            --env TLS_ENABLED="1" \
-           --env GIZMOSQL_USERNAME=gizmosql \
+           --env GIZMOSQL_USERNAME="gizmosql_user" \
            --env GIZMOSQL_PASSWORD="gizmosql_password" \
            --env PRINT_QUERIES="1" \
+           --env INIT_SQL_COMMANDS="CALL dbgen(sf=0.01);" \
            --pull always \
            gizmodata/gizmosql:latest
 ```
@@ -101,7 +111,7 @@ docker run --name gizmosql \
 Then connect GizmoSQL UI using:
 - Host: `localhost`
 - Port: `31337`
-- Username: `gizmosql`
+- Username: `gizmosql_user`
 - Password: `gizmosql_password`
 - Use TLS: enabled
 - Skip TLS Verify: enabled (for self-signed certificate)

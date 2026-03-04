@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+  <Package Name="GizmoSQL UI"
+           Manufacturer="GizmoData LLC"
+           Version="!(bind.fileVersion.GizmoSqlUi)"
+           UpgradeCode="{A7F3B2E1-5C84-4D9A-B6E0-8F2D1A3C5E7B}"
+           Scope="perMachine">
+
+    <Icon Id="gizmosql.ico" SourceFile="gizmosql.ico" />
+    <Property Id="ARPPRODUCTICON" Value="gizmosql.ico" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of GizmoSQL UI is already installed." />
+    <Media Id="1" Cabinet="gizmosql-ui.cab" EmbedCab="yes" />
+
+    <WixVariable Id="WixUIBannerBmp" Value="banner.bmp" />
+    <WixVariable Id="WixUIDialogBmp" Value="dialog.bmp" />
+    <WixVariable Id="WixUILicenseRtf" Value="license.rtf" />
+
+    <Feature Id="ProductFeature" Title="GizmoSQL UI" Level="1">
+      <ComponentGroupRef Id="AppComponents" />
+      <ComponentGroupRef Id="ShortcutComponents" />
+      <ComponentGroupRef Id="PathComponents" />
+    </Feature>
+
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
+  </Package>
+
+  <Fragment>
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="GizmoSQL UI" />
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="ApplicationProgramsFolder" Name="GizmoSQL UI" />
+    </StandardDirectory>
+
+    <StandardDirectory Id="DesktopFolder" />
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="AppComponents" Directory="INSTALLFOLDER">
+      <Component Id="MainExe" Guid="{C4E8A1F7-2B63-4D5E-9A0C-7F1D3E5B8A2C}">
+        <File Id="GizmoSqlUi" Source="!(bindpath.BinDir)\gizmosql-ui.exe" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="ShortcutComponents">
+      <Component Id="DesktopShortcut" Guid="{E5F9B3A2-6D74-4E8F-A1B3-9C2D4F6E8A0B}" Directory="DesktopFolder">
+        <Shortcut Id="DesktopShortcut"
+                  Name="GizmoSQL UI"
+                  Description="Web-based SQL interface for GizmoSQL servers"
+                  Target="[INSTALLFOLDER]gizmosql-ui.exe"
+                  WorkingDirectory="INSTALLFOLDER"
+                  Icon="gizmosql.ico" />
+        <RegistryValue Root="HKCU" Key="Software\GizmoData\GizmoSQL UI"
+                       Name="DesktopShortcut" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+      <Component Id="StartMenuShortcut" Guid="{F6A0C4B3-7E85-4F9A-B2C4-0D3E5A7F9B1C}" Directory="ApplicationProgramsFolder">
+        <Shortcut Id="StartMenuShortcut"
+                  Name="GizmoSQL UI"
+                  Description="Web-based SQL interface for GizmoSQL servers"
+                  Target="[INSTALLFOLDER]gizmosql-ui.exe"
+                  WorkingDirectory="INSTALLFOLDER"
+                  Icon="gizmosql.ico" />
+        <RemoveFolder Id="CleanUpStartMenu" Directory="ApplicationProgramsFolder" On="uninstall" />
+        <RegistryValue Root="HKCU" Key="Software\GizmoData\GizmoSQL UI"
+                       Name="StartMenuShortcut" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="PathComponents" Directory="INSTALLFOLDER">
+      <Component Id="PathEntry" Guid="{B7D1E5C4-8F96-4A0B-C3D5-1E4F6B8A0C2D}">
+        <Environment Id="PATH" Name="PATH" Value="[INSTALLFOLDER]" Permanent="no"
+                     Part="last" Action="set" System="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>

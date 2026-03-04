@@ -76,6 +76,7 @@ jobs:
         continue-on-error: true
 
       - name: Package binary for ${{ matrix.target }}
+        shell: bash
         run: pnpm package:${{ matrix.target }}
 
       - name: Generate artifact attestation

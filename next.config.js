@@ -3,24 +3,24 @@ const nextConfig = {
   // Output standalone build for packaging
   output: 'standalone',
 
+  // Externalize gRPC/protobuf native packages from bundling
+  serverExternalPackages: ['@gizmodata/gizmosql-client', '@grpc/grpc-js', 'google-protobuf'],
+
   // Enable server actions
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',
     },
-    // In development, externalize gRPC/protobuf packages from webpack bundling.
-    // This prevents protobuf `instanceof` failures caused by duplicate module instances
-    // when using npm link. Not needed in production (no symlinks).
-    ...(process.env.NODE_ENV !== 'production' ? {
-      serverComponentsExternalPackages: ['@gizmodata/gizmosql-client', '@grpc/grpc-js', 'google-protobuf'],
-    } : {}),
   },
 
    images: {
     unoptimized: true,
   },
-  
-  // Configure webpack for parquet-wasm
+
+  // Turbopack is the default bundler in Next.js 16
+  turbopack: {},
+
+  // Configure webpack for parquet-wasm (used when building with --webpack flag)
   webpack: (config, { isServer }) => {
     // Handle WASM files
     config.experiments = {

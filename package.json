@@ -1,17 +1,17 @@
 {
   "name": "gizmosql-ui",
-  "version": "2.4.1",
+  "version": "2.5.0",
   "description": "GizmoSQL UI - A web-based SQL interface for GizmoSQL servers",
   "private": true,
   "bin": "launcher.js",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "node .next/standalone/server.js",
-    "lint": "next lint",
+    "lint": "eslint .",
     "bundle": "pnpm build && node scripts/bundle.js",
     "package": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . --compress Brotli",
-    "package:prepare": "pnpm build && cp -r public .next/standalone/ && cp scripts/launcher.js .next/standalone/ && cp -r .next/static .next/standalone/.next/ && cd .next/standalone && sed -i.bak 's/process.chdir(__dirname)//' server.js && rm server.js.bak && chmod +x launcher.js",
+    "package:prepare": "pnpm build && node scripts/prepare-standalone.js",
     "package:macos": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node22-macos-arm64 --compress Brotli",
     "package:linux": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node22-linux-x64 --compress Brotli",
     "package:linux-arm64": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node22-linux-arm64 --compress Brotli",
@@ -33,23 +33,28 @@
     "@gizmodata/gizmosql-client": "^1.4.0",
     "@monaco-editor/react": "^4.7.0",
     "apache-arrow": "^21.1.0",
-    "lucide-react": "^0.562.0",
-    "next": "^14.2.35",
+    "lucide-react": "^0.577.0",
+    "next": "^16.1.6",
     "parquet-wasm": "^0.7.1",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-icons": "^5.5.0"
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-icons": "^5.6.0"
   },
   "devDependencies": {
-    "@types/node": "^22.19.6",
-    "@types/react": "^18.3.27",
-    "@types/react-dom": "^18.3.7",
-    "@yao-pkg/pkg": "^6.11.0",
+    "@next/eslint-plugin-next": "^16.1.6",
+    "@types/node": "^25.3.3",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@yao-pkg/pkg": "^6.14.1",
+    "eslint": "^9.39.3",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
     "typescript": "^5.9.3"
   },
   "pkg": {
     "assets": [
       ".next/**/*",
+      "node_modules/**/*",
       "public/**/*.*"
     ],
     "targets": [
