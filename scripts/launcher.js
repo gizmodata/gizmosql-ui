@@ -6,7 +6,7 @@ process.env.NODE_ENV ??= 'production';
 process.env.NEXT_TELEMETRY_DISABLED ??= '1';
 
 // Read version from package.json
-let VERSION = '2.5.0';
+let VERSION = '2.5.1';
 try {
   const pkg = require('package.json');
   VERSION = pkg.version;

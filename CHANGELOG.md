@@ -5,6 +5,11 @@ All notable changes to GizmoSQL UI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.1] - 2026-03-10
+
+### Fixed
+- Updated `@gizmodata/gizmosql-client` to 1.4.1 to fix session leak — client now sends `CloseSession` RPC on disconnect
+
 ## [2.5.0] - 2026-03-04
 
 ### Added
