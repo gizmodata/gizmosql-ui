@@ -29,6 +29,7 @@ export function Cell({ notebookId, cell, isActive, onActivate, onAddCellBelow, o
   const containerRef = useRef<HTMLDivElement>(null);
   const [showServerSelect, setShowServerSelect] = useState(false);
   const [pendingExecute, setPendingExecute] = useState(false);
+  const [editorHeight, setEditorHeight] = useState(100);
   // Use ref to avoid stale closure in Monaco actions
   const executeRef = useRef<() => void>(() => {});
 
@@ -108,10 +109,23 @@ export function Cell({ notebookId, cell, isActive, onActivate, onAddCellBelow, o
     return () => container.removeEventListener('keydown', handleKeyDown, true);
   }, []);
 
+  const updateEditorHeight = useCallback((editorInstance: unknown) => {
+    const editor = editorInstance as {
+      getContentHeight: () => number;
+    };
+    const contentHeight = editor.getContentHeight();
+    const newHeight = Math.max(100, Math.min(600, contentHeight));
+    setEditorHeight(newHeight);
+  }, []);
+
   const handleEditorDidMount = (editorInstance: unknown, monaco: unknown) => {
     editorRef.current = editorInstance;
-    const editor = editorInstance as { addAction: (config: unknown) => void; focus: () => void };
+    const editor = editorInstance as { addAction: (config: unknown) => void; focus: () => void; onDidContentSizeChange: (cb: () => void) => void };
     const mon = monaco as { KeyMod: { CtrlCmd: number; Shift: number }; KeyCode: { Enter: number }; languages: { CompletionItemKind: { Keyword: number }; registerCompletionItemProvider: (lang: string, provider: unknown) => void } };
+
+    // Auto-resize when content size changes
+    updateEditorHeight(editorInstance);
+    editor.onDidContentSizeChange(() => updateEditorHeight(editorInstance));
 
     // Add Ctrl+Enter / Cmd+Enter action to execute query
     editor.addAction({
@@ -243,7 +257,7 @@ export function Cell({ notebookId, cell, isActive, onActivate, onAddCellBelow, o
 
       <div className={styles.cellEditor}>
         <Editor
-          height="100px"
+          height={`${editorHeight}px`}
           defaultLanguage="sql"
           value={cell.sql}
           onChange={(value) => updateCellSql(notebookId, cell.id, value || '')}

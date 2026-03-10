@@ -9,6 +9,7 @@ import { ResultSchema } from '@/components/ResultSchema';
 import { AddServerDialog } from '@/components/AddServerDialog';
 import { TableDetails } from '@/components/TableDetails';
 import { AdminScreen } from '@/components/AdminScreen';
+import { AboutModal } from '@/components/AboutModal';
 import Image from 'next/image';
 import styles from './page.module.css';
 
@@ -23,6 +24,7 @@ export default function Home() {
   const { state, toggleTheme, updateCellServer, executeCell } = useApp();
   const [showAddServer, setShowAddServer] = useState(false);
   const [showAdminScreen, setShowAdminScreen] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   const [selectedCellId, setSelectedCellId] = useState<string | null>(null);
   const [selectedTable, setSelectedTable] = useState<SelectedTable | null>(null);
   const [leftSidebarWidth, setLeftSidebarWidth] = useState(260);
@@ -147,7 +149,7 @@ export default function Home() {
           <a href="https://gizmodata.com/gizmosql" target="_blank" rel="noopener noreferrer">
             <Image src="/gizmosql-logo.png" alt="GizmoSQL" className={styles.headerLogo} width={28} height={28} />
           </a>
-          <span className={styles.headerTitle}>GizmoSQL UI v2.5.2</span>
+          <span className={styles.headerTitle}>GizmoSQL UI</span>
         </div>
         <div className={styles.headerRight}>
           <button
@@ -156,6 +158,13 @@ export default function Home() {
             title={`Switch to ${state.theme === 'light' ? 'dark' : 'light'} theme`}
           >
             {state.theme === 'light' ? '🌙' : '☀️'}
+          </button>
+          <button
+            className={`btn btn-ghost ${styles.adminBtn}`}
+            onClick={() => setShowAbout(true)}
+            title="About GizmoSQL UI"
+          >
+            About
           </button>
           <button
             className={`btn btn-ghost ${styles.adminBtn}`}
@@ -217,6 +226,11 @@ export default function Home() {
           }}
           onSuccess={handleServerConnected}
         />
+      )}
+
+      {/* About Modal */}
+      {showAbout && (
+        <AboutModal onClose={() => setShowAbout(false)} />
       )}
 
       {/* Admin Screen */}

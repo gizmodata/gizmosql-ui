@@ -5,6 +5,18 @@ All notable changes to GizmoSQL UI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.3] - 2026-03-10
+
+### Fixed
+- Update `@gizmodata/gizmosql-client` to 1.4.2 — fixes CloseSession being sent to wrong session in pkg builds
+
+### Added
+- About modal with version and copyright info
+- Auto-resizing SQL editor cells — editors grow with content up to 600px
+
+### Changed
+- Removed version number from header title (now shown in About modal)
+
 ## [2.5.2] - 2026-03-10
 
 ### Fixed
