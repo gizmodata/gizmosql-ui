@@ -147,7 +147,7 @@ export default function Home() {
           <a href="https://gizmodata.com/gizmosql" target="_blank" rel="noopener noreferrer">
             <Image src="/gizmosql-logo.png" alt="GizmoSQL" className={styles.headerLogo} width={28} height={28} />
           </a>
-          <span className={styles.headerTitle}>GizmoSQL UI</span>
+          <span className={styles.headerTitle}>GizmoSQL UI v2.5.2</span>
         </div>
         <div className={styles.headerRight}>
           <button

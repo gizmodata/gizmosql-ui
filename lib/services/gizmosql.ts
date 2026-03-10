@@ -70,8 +70,12 @@ export class GizmoSQLService {
 
   async close(): Promise<void> {
     if (this.client) {
+      console.log(`GizmoSQLService: closing connection to ${this.config.host}:${this.config.port}...`);
       await this.client.close();
       this.client = null;
+      console.log(`GizmoSQLService: connection closed (CloseSession RPC sent)`);
+    } else {
+      console.warn('GizmoSQLService: close() called but client is already null');
     }
   }
 

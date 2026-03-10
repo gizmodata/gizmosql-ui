@@ -303,6 +303,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('gizmosql-ui-state', JSON.stringify(toSave));
   }, [state]);
 
+  // Close all server connections on browser tab/window close (best-effort via sendBeacon)
+  const serversRef = useRef(state.servers);
+  serversRef.current = state.servers;
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      serversRef.current.forEach(server => {
+        if (server.status === 'connected') {
+          const blob = new Blob(
+            [JSON.stringify({ sessionId: server.sessionId })],
+            { type: 'application/json' }
+          );
+          navigator.sendBeacon('/api/disconnect', blob);
+        }
+      });
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
   // Apply theme to document
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', state.theme);
