@@ -53,18 +53,21 @@ export class GizmoSQLService {
       tlsSkipVerify: this.config.skipTlsVerify,
     });
 
-    // Test connection by getting catalogs
+    // Explicitly connect/authenticate first so auth errors are surfaced
+    // cleanly rather than being wrapped inside getCatalogs().
+    try {
+      await this.client.connect();
+    } catch (error) {
+      console.error('GizmoSQL connection error:', error);
+      throw error instanceof Error ? error : new Error(String(error));
+    }
+
+    // Verify connection works by fetching catalogs
     try {
       await this.client.getCatalogs();
     } catch (error) {
-      // Log full error for debugging
-      console.error('GizmoSQL connection error (full):', error);
-
-      // Re-throw with the full message - don't strip anything
-      if (error instanceof Error) {
-        throw error;
-      }
-      throw new Error(String(error));
+      console.error('GizmoSQL connection test error:', error);
+      throw error instanceof Error ? error : new Error(String(error));
     }
   }
 

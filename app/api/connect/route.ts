@@ -32,21 +32,17 @@ export async function POST(request: NextRequest) {
       message: `Connected to ${host}:${port || 31337}`
     });
   } catch (error) {
-    // Log full error for debugging
     console.error('Connection error:', error);
 
-    // Extract detailed error message (gRPC errors may have nested details)
-    let message = 'Connection failed';
-    if (error instanceof Error) {
-      message = error.message;
-      // Check for gRPC error details
-      const grpcError = error as Error & { details?: string; code?: number; cause?: Error };
-      if (grpcError.details) {
-        message = grpcError.details;
-      } else if (grpcError.cause?.message) {
-        message = grpcError.cause.message;
-      }
-    }
-    return NextResponse.json({ error: message }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Connection failed';
+    // Return 401 for authentication errors so the client knows it's a credentials issue
+    const isAuthError = error instanceof Error &&
+      (error.name === 'AuthenticationError' ||
+       (error as unknown as Record<string, unknown>).code === 'UNAUTHENTICATED' ||
+       message.toLowerCase().includes('unauthenticated') ||
+       message.toLowerCase().includes('invalid credentials'));
+    const status = isAuthError ? 401 : 500;
+
+    return NextResponse.json({ error: message }, { status });
   }
 }
