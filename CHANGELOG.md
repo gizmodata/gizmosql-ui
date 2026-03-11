@@ -5,6 +5,13 @@ All notable changes to GizmoSQL UI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.4] - 2026-03-11
+
+### Fixed
+- Connection error messages now show the server's actual error detail (e.g., "Invalid credentials") instead of generic "Failed to get catalogs: ConnectionError: Failed to connect to..."
+- Return 401 status for authentication errors instead of 500
+- Update `@gizmodata/gizmosql-client` to 1.4.3
+
 ## [2.5.3] - 2026-03-10
 
 ### Fixed
