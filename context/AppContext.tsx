@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useReducer, useCallback, ReactNode, useEffect, useRef } from 'react';
+import { createContext, useContext, useReducer, useCallback, ReactNode, useEffect, useRef, useState } from 'react';
 import { AppState, Theme, ServerConnection, ServerConfig, SavedConnection, Notebook, Cell, CellResult, InstrumentationInfo } from '@/lib/types';
 import { api } from '@/lib/api';
 
@@ -153,6 +153,8 @@ const DEFAULT_PAGE_SIZE = 1000;
 // Context
 interface AppContextType {
   state: AppState;
+  // Runtime config (launch flags) — true when the TPC-H query selector is enabled
+  enableTpch: boolean;
   // Theme
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
@@ -189,6 +191,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const isFirstRender = useRef(true);
   const hasHydrated = useRef(false);
   const hasAutoConnected = useRef(false);
+  const [enableTpch, setEnableTpch] = useState(false);
+
+  // Fetch runtime config (launch flags) once on mount
+  useEffect(() => {
+    api.getConfig()
+      .then(config => setEnableTpch(config.enableTpch))
+      .catch(() => { /* non-critical: feature stays disabled */ });
+  }, []);
 
   // Load state from localStorage on mount
   useEffect(() => {
@@ -651,6 +661,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const value: AppContextType = {
     state,
+    enableTpch,
     setTheme,
     toggleTheme,
     connectServer,

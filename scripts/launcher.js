@@ -5,8 +5,17 @@ const { exec } = require('child_process');
 process.env.NODE_ENV ??= 'production';
 process.env.NEXT_TELEMETRY_DISABLED ??= '1';
 
+// --enable-tpch: show a TPC-H query (1-22) selector in the SQL editor.
+// Also honored via the GIZMOSQL_UI_ENABLE_TPCH environment variable.
+if (process.argv.slice(2).includes('--enable-tpch')) {
+  process.env.GIZMOSQL_UI_ENABLE_TPCH = '1';
+}
+const TPCH_ENABLED = ['1', 'true', 'yes'].includes(
+  (process.env.GIZMOSQL_UI_ENABLE_TPCH || '').toLowerCase()
+);
+
 // Read version from package.json
-let VERSION = '2.5.4';
+let VERSION = '2.5.5';
 try {
   const pkg = require('package.json');
   VERSION = pkg.version;
@@ -65,6 +74,10 @@ console.log(`
 
   Opening browser...
 `);
+
+if (TPCH_ENABLED) {
+  console.log('  TPC-H demo mode enabled: query selector (1-22) shown in the editor.\n');
+}
 
 // Open browser after a short delay to allow server to start
 setTimeout(() => {

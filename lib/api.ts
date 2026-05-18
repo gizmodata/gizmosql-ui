@@ -161,6 +161,18 @@ class ApiClient {
     return response.json();
   }
 
+  async getConfig(): Promise<{ enableTpch: boolean }> {
+    try {
+      const response = await fetch(`${API_BASE}/config`, { method: 'GET' });
+      if (!response.ok) {
+        return { enableTpch: false };
+      }
+      return response.json();
+    } catch {
+      return { enableTpch: false };
+    }
+  }
+
   async getColumns(catalog?: string, schema?: string, table?: string): Promise<ColumnInfo[]> {
     const params = new URLSearchParams();
     if (catalog) params.append('catalog', catalog);

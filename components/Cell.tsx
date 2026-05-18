@@ -4,6 +4,7 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useApp } from '@/context/AppContext';
 import { Cell as CellType } from '@/lib/types';
+import { TPCH_QUERIES } from '@/lib/tpch-queries';
 import { ResultsTable } from './ResultsTable';
 import { ServerSelectModal } from './ServerSelectModal';
 import styles from './Cell.module.css';
@@ -24,7 +25,7 @@ interface CellProps {
 }
 
 export function Cell({ notebookId, cell, isActive, onActivate, onAddCellBelow, onRequestConnection }: CellProps) {
-  const { state, updateCellSql, updateCellServer, executeCell, removeCell, fetchCellPage } = useApp();
+  const { state, enableTpch, updateCellSql, updateCellServer, executeCell, removeCell, fetchCellPage } = useApp();
   const editorRef = useRef<unknown>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [showServerSelect, setShowServerSelect] = useState(false);
@@ -225,6 +226,28 @@ export function Cell({ notebookId, cell, isActive, onActivate, onAddCellBelow, o
           )}
         </div>
         <div className={styles.cellHeaderRight}>
+          {enableTpch && (
+            <select
+              className={styles.tpchSelect}
+              value=""
+              title="Load a TPC-H benchmark query into this cell"
+              onClick={e => e.stopPropagation()}
+              onChange={e => {
+                const id = Number(e.target.value);
+                const query = TPCH_QUERIES.find(q => q.id === id);
+                if (query) {
+                  updateCellSql(notebookId, cell.id, query.sql);
+                }
+              }}
+            >
+              <option value="">TPC-H query…</option>
+              {TPCH_QUERIES.map(q => (
+                <option key={q.id} value={q.id}>
+                  Q{q.id} — {q.title}
+                </option>
+              ))}
+            </select>
+          )}
           <select
             className={styles.serverSelect}
             value={cell.serverId || ''}

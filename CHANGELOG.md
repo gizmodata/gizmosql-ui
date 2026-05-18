@@ -5,6 +5,11 @@ All notable changes to GizmoSQL UI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.5] - 2026-05-18
+
+### Added
+- TPC-H demo mode: launch with `--enable-tpch` (or set `GIZMOSQL_UI_ENABLE_TPCH=1`) to show a per-cell dropdown that loads any of the 22 standard TPC-H benchmark queries into the SQL editor. Assumes the TPC-H tables already exist on the connected server.
+
 ## [2.5.4] - 2026-03-11
 
 ### Fixed
