@@ -61,7 +61,8 @@ jobs:
         if: ${{ startsWith(matrix.target, 'windows') }}
         shell: bash
         # pnpm 11 reads settings from pnpm-workspace.yaml, not .npmrc
-        run: printf '\nnodeLinker: hoisted\n' >> pnpm-workspace.yaml
+        run: |
+          printf '\nnodeLinker: hoisted\n' >> pnpm-workspace.yaml
 
       - name: Get pnpm store directory
         shell: bash
