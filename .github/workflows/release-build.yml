@@ -170,9 +170,17 @@ jobs:
 
       - name: Build MSI
         run: |
+          $ref = "${{ github.event.inputs.version || github.ref_name }}"
+          $version = $ref.TrimStart("v")
+          if ($version -notmatch '^\d+\.\d+\.\d+$') {
+            Write-Error "Could not derive a semantic version from '$ref'"
+            exit 1
+          }
+          Write-Host "Building MSI with ProductVersion=$version"
           wix build `
             "${{ github.workspace }}\installer\GizmoSQLUI.wxs" `
             -arch ${{ matrix.arch }} `
+            -d ProductVersion="$version" `
             -b BinDir="${{ github.workspace }}\installer\bin" `
             -b "${{ github.workspace }}\installer" `
             -o "${{ github.workspace }}\installer\GizmoSQL-UI-${{ matrix.arch }}.msi" `

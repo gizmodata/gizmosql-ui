@@ -3,14 +3,15 @@
      xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
   <Package Name="GizmoSQL UI"
            Manufacturer="GizmoData LLC"
-           Version="!(bind.fileVersion.GizmoSqlUi)"
+           Version="$(var.ProductVersion)"
            UpgradeCode="{A7F3B2E1-5C84-4D9A-B6E0-8F2D1A3C5E7B}"
            Scope="perMachine">
 
     <Icon Id="gizmosql.ico" SourceFile="gizmosql.ico" />
     <Property Id="ARPPRODUCTICON" Value="gizmosql.ico" />
 
-    <MajorUpgrade DowngradeErrorMessage="A newer version of GizmoSQL UI is already installed." />
+    <MajorUpgrade AllowSameVersionUpgrades="yes"
+                  DowngradeErrorMessage="A newer version of GizmoSQL UI is already installed." />
     <Media Id="1" Cabinet="gizmosql-ui.cab" EmbedCab="yes" />
 
     <WixVariable Id="WixUIBannerBmp" Value="banner.bmp" />
