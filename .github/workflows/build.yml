@@ -57,6 +57,11 @@ jobs:
         with:
           version: 11
 
+      - name: Use hoisted node_modules layout (Windows)
+        if: ${{ startsWith(matrix.target, 'windows') }}
+        shell: bash
+        run: echo "node-linker=hoisted" >> .npmrc
+
       - name: Get pnpm store directory
         shell: bash
         run: |
