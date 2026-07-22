@@ -35,6 +35,10 @@ jobs:
             target: windows
             artifact: gizmosql-ui-win-x64.exe
             build-output: dist/gizmosql-ui.exe
+          - os: windows-11-arm
+            target: windows-arm64
+            artifact: gizmosql-ui-win-arm64.exe
+            build-output: dist/gizmosql-ui.exe
 
     name: Build (${{ matrix.target }})
     runs-on: ${{ matrix.os }}
@@ -60,7 +64,7 @@ jobs:
 
       - name: Setup pnpm cache
         uses: actions/cache@v6
-        if: matrix.target != 'windows'
+        if: ${{ !startsWith(matrix.target, 'windows') }}
         with:
           path: ${{ env.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}

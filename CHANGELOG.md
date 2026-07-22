@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.5.6] - 2026-07-22
 
+### Added
+- Windows arm64 builds: signed `gizmosql-ui-win-arm64.exe` and `GizmoSQL-UI-arm64.msi` release artifacts
+
 ### Fixed
 - Update `@gizmodata/gizmosql-client` to 1.4.4 — fixes a bug with prepared statements
 - Packaged binaries no longer crash on startup with `ERR_INSPECTOR_NOT_AVAILABLE` — the inspector shim now intercepts `require("node:inspector")` (used by Next.js 16.2), which bypassed the previous `_resolveFilename` hook

@@ -59,10 +59,13 @@ jobs:
           if-no-files-found: error
 
   sign-windows:
-    name: Sign Windows (x64)
+    name: Sign Windows (${{ matrix.arch }})
     needs: build
     runs-on: windows-latest
     environment: production
+    strategy:
+      matrix:
+        arch: [x64, arm64]
     permissions:
       id-token: write
       contents: read
@@ -70,7 +73,7 @@ jobs:
       - name: Download unsigned executable
         uses: actions/download-artifact@v8
         with:
-          name: gizmosql-ui-win-x64.exe
+          name: gizmosql-ui-win-${{ matrix.arch }}.exe
           path: unsigned
 
       - name: Azure Login
@@ -98,15 +101,18 @@ jobs:
       - name: Upload signed executable
         uses: actions/upload-artifact@v7
         with:
-          name: gizmosql-ui-win-x64-signed
+          name: gizmosql-ui-win-${{ matrix.arch }}-signed
           path: unsigned/gizmosql-ui.exe
           if-no-files-found: error
 
   build-msi:
-    name: Build MSI (x64)
+    name: Build MSI (${{ matrix.arch }})
     needs: sign-windows
     runs-on: windows-latest
     environment: production
+    strategy:
+      matrix:
+        arch: [x64, arm64]
     permissions:
       id-token: write
       contents: read
@@ -117,7 +123,7 @@ jobs:
       - name: Download signed executable
         uses: actions/download-artifact@v8
         with:
-          name: gizmosql-ui-win-x64-signed
+          name: gizmosql-ui-win-${{ matrix.arch }}-signed
           path: installer/bin
 
       - name: Install WiX Toolset
@@ -155,10 +161,10 @@ jobs:
         run: |
           wix build `
             "${{ github.workspace }}\installer\GizmoSQLUI.wxs" `
-            -arch x64 `
+            -arch ${{ matrix.arch }} `
             -b BinDir="${{ github.workspace }}\installer\bin" `
             -b "${{ github.workspace }}\installer" `
-            -o "${{ github.workspace }}\installer\GizmoSQL-UI-x64.msi" `
+            -o "${{ github.workspace }}\installer\GizmoSQL-UI-${{ matrix.arch }}.msi" `
             -ext WixToolset.UI.wixext
 
       - name: Azure Login
@@ -181,13 +187,13 @@ jobs:
             --timestamp-digest sha256 `
             --file-digest sha256 `
             --verbose `
-            "${{ github.workspace }}\installer\GizmoSQL-UI-x64.msi"
+            "${{ github.workspace }}\installer\GizmoSQL-UI-${{ matrix.arch }}.msi"
 
       - name: Upload MSI
         uses: actions/upload-artifact@v7
         with:
-          name: gizmosql-ui-win-x64-msi
-          path: installer/GizmoSQL-UI-x64.msi
+          name: gizmosql-ui-win-${{ matrix.arch }}-msi
+          path: installer/GizmoSQL-UI-${{ matrix.arch }}.msi
           if-no-files-found: error
 
   release:
@@ -216,17 +222,29 @@ jobs:
           name: gizmosql-ui-macos-arm64-signed
           path: artifacts/gizmosql-ui-macos-arm64-signed
 
-      - name: Download signed Windows artifact
+      - name: Download signed Windows x64 artifact
         uses: actions/download-artifact@v8
         with:
           name: gizmosql-ui-win-x64-signed
           path: artifacts/gizmosql-ui-win-x64-signed
 
-      - name: Download MSI artifact
+      - name: Download signed Windows arm64 artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: gizmosql-ui-win-arm64-signed
+          path: artifacts/gizmosql-ui-win-arm64-signed
+
+      - name: Download x64 MSI artifact
         uses: actions/download-artifact@v8
         with:
           name: gizmosql-ui-win-x64-msi
           path: artifacts/gizmosql-ui-win-x64-msi
+
+      - name: Download arm64 MSI artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: gizmosql-ui-win-arm64-msi
+          path: artifacts/gizmosql-ui-win-arm64-msi
 
       - name: Prepare release assets
         run: |
@@ -235,7 +253,9 @@ jobs:
           cp artifacts/gizmosql-ui-linux-arm64/gizmosql-ui release/gizmosql-ui-linux-arm64
           cp artifacts/gizmosql-ui-macos-arm64-signed/gizmosql-ui release/gizmosql-ui-macos-arm64
           cp artifacts/gizmosql-ui-win-x64-signed/gizmosql-ui.exe release/gizmosql-ui-win-x64.exe
+          cp artifacts/gizmosql-ui-win-arm64-signed/gizmosql-ui.exe release/gizmosql-ui-win-arm64.exe
           cp artifacts/gizmosql-ui-win-x64-msi/GizmoSQL-UI-x64.msi release/GizmoSQL-UI-x64.msi
+          cp artifacts/gizmosql-ui-win-arm64-msi/GizmoSQL-UI-arm64.msi release/GizmoSQL-UI-arm64.msi
           cd release
           sha256sum * > checksums.txt || shasum -a 256 * > checksums.txt
 
@@ -260,7 +280,9 @@ jobs:
             release/gizmosql-ui-linux-arm64
             release/gizmosql-ui-macos-arm64
             release/gizmosql-ui-win-x64.exe
+            release/gizmosql-ui-win-arm64.exe
             release/GizmoSQL-UI-x64.msi
+            release/GizmoSQL-UI-arm64.msi
             release/checksums.txt
 
       - name: Update Homebrew formula

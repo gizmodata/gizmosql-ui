@@ -16,6 +16,7 @@
     "package:linux": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node24-linux-x64 --compress Brotli",
     "package:linux-arm64": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node24-linux-arm64 --compress Brotli",
     "package:windows": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node24-win-x64 --compress Brotli",
+    "package:windows-arm64": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node24-win-arm64 --compress Brotli",
     "clean": "rm -rf dist .next node_modules"
   },
   "keywords": [
@@ -61,7 +62,8 @@
       "node24-macos-arm64",
       "node24-linux-x64",
       "node24-linux-arm64",
-      "node24-win-x64"
+      "node24-win-x64",
+      "node24-win-arm64"
     ],
     "outputPath": "../../dist"
   }

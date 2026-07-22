@@ -25,7 +25,9 @@ gizmosql-ui
 
 ### Windows (MSI Installer)
 
-Download `GizmoSQL-UI-x64.msi` from the [releases page](https://github.com/gizmodata/gizmosql-ui/releases) and run the installer.
+Download the installer for your architecture from the [releases page](https://github.com/gizmodata/gizmosql-ui/releases) and run it:
+- `GizmoSQL-UI-x64.msi` — Intel/AMD (x64)
+- `GizmoSQL-UI-arm64.msi` — Windows on ARM (arm64)
 
 GizmoSQL UI will be available from:
 - Desktop shortcut
