@@ -5,7 +5,7 @@ All notable changes to GizmoSQL UI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.5.7] - 2026-07-22
 
 ### Fixed
 - MSI installer artwork: logo no longer stretched to 4:1 (aspect ratio preserved), moved out of the banner's title-text area, and kept within the dialog's left strip so it doesn't underlap the wizard text
