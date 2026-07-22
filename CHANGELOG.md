@@ -15,7 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Packaged binaries no longer crash on startup with `ERR_INSPECTOR_NOT_AVAILABLE` — the inspector shim now intercepts `require("node:inspector")` (used by Next.js 16.2), which bypassed the previous `_resolveFilename` hook
 
 ### Changed
-- Bump dependencies: Next.js 16.2.10, React 19.2.7, apache-arrow 21.2.0, parquet-wasm 0.7.2, react-icons 5.7.0, @next/eslint-plugin-next 16.2.10, @yao-pkg/pkg 6.21.0, eslint-plugin-react-hooks 7.1.1
+- Bump dependencies: Next.js 16.2.10, React 19.2.7, apache-arrow 21.2.0, parquet-wasm 0.7.2, react-icons 5.7.0, @next/eslint-plugin-next 16.2.10, eslint-plugin-react-hooks 7.1.1
+- Pin `@yao-pkg/pkg` to 6.14.x — the 6.15+ file walker fails on pnpm junctions on Windows (EPERM); 6.14 supports the Node 24 targets we need
 - Build with Node.js 24: CI and packaged binaries now use Node 24 (previously Node 22)
 - README: Homebrew install instructions now include `brew trust gizmodata/tap` (required as of Homebrew 6.0)
 - CI: bump GitHub Actions to current majors (checkout v7, setup-node v7, cache v6, upload-artifact v7, download-artifact v8, attest-build-provenance v4, gh-release v3, pnpm/action-setup v6, azure/login v3)
