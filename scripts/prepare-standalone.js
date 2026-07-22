@@ -63,20 +63,31 @@ console.log('Patching server.js (inspector shim for pkg)...');
 const shim = `\
 // --- pkg compatibility shim ---
 // Intercept require("inspector") / require("node:inspector") for pkg builds
-// where the inspector module is not available.
-const _originalRequire = require;
-const _Module = _originalRequire('module');
-const _origResolve = _Module._resolveFilename;
-_Module._resolveFilename = function(request, ...args) {
-  if (request === 'inspector' || request === 'node:inspector') {
-    return '__pkg_inspector_shim__';
-  }
-  return _origResolve.call(this, request, ...args);
+// where the inspector module is not available. Must hook Module._load (not
+// _resolveFilename): "node:"-prefixed builtin requests bypass resolution.
+const _Module = require('module');
+const _inspectorShim = {
+  url: () => undefined,
+  open: () => {},
+  close: () => {},
+  console,
+  Session: class Session {
+    connect() {}
+    disconnect() {}
+    post(_method, _params, cb) { if (typeof cb === 'function') cb(null, {}); }
+    on() {}
+  },
 };
-const _shimModule = new _Module('__pkg_inspector_shim__');
-_shimModule.loaded = true;
-_shimModule.exports = { url: () => undefined, open: () => {}, close: () => {}, Session: class {} };
-_Module._cache['__pkg_inspector_shim__'] = _shimModule;
+const _origLoad = _Module._load;
+_Module._load = function(request, parent, isMain) {
+  if (
+    request === 'inspector' || request === 'node:inspector' ||
+    request === 'inspector/promises' || request === 'node:inspector/promises'
+  ) {
+    return _inspectorShim;
+  }
+  return _origLoad.call(this, request, parent, isMain);
+};
 // --- end shim ---
 
 `;

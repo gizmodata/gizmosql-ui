@@ -32,10 +32,10 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Download unsigned binary
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: gizmosql-ui-macos-arm64
           path: unsigned
@@ -52,7 +52,7 @@ jobs:
           entitlements-path: macos/entitlements.plist
 
       - name: Upload signed binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gizmosql-ui-macos-arm64-signed
           path: unsigned/gizmosql-ui
@@ -68,13 +68,13 @@ jobs:
       contents: read
     steps:
       - name: Download unsigned executable
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: gizmosql-ui-win-x64.exe
           path: unsigned
 
       - name: Azure Login
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -96,7 +96,7 @@ jobs:
             unsigned\gizmosql-ui.exe
 
       - name: Upload signed executable
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gizmosql-ui-win-x64-signed
           path: unsigned/gizmosql-ui.exe
@@ -112,10 +112,10 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Download signed executable
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: gizmosql-ui-win-x64-signed
           path: installer/bin
@@ -162,7 +162,7 @@ jobs:
             -ext WixToolset.UI.wixext
 
       - name: Azure Login
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -184,7 +184,7 @@ jobs:
             "${{ github.workspace }}\installer\GizmoSQL-UI-x64.msi"
 
       - name: Upload MSI
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gizmosql-ui-win-x64-msi
           path: installer/GizmoSQL-UI-x64.msi
@@ -196,34 +196,34 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Download Linux x64 artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: gizmosql-ui-linux-x64
           path: artifacts/gizmosql-ui-linux-x64
 
       - name: Download Linux arm64 artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: gizmosql-ui-linux-arm64
           path: artifacts/gizmosql-ui-linux-arm64
 
       - name: Download signed macOS artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: gizmosql-ui-macos-arm64-signed
           path: artifacts/gizmosql-ui-macos-arm64-signed
 
       - name: Download signed Windows artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: gizmosql-ui-win-x64-signed
           path: artifacts/gizmosql-ui-win-x64-signed
 
       - name: Download MSI artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: gizmosql-ui-win-x64-msi
           path: artifacts/gizmosql-ui-win-x64-msi
@@ -239,10 +239,22 @@ jobs:
           cd release
           sha256sum * > checksums.txt || shasum -a 256 * > checksums.txt
 
+      - name: Extract changelog section for release notes
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          awk -v ver="$VERSION" '
+            $0 ~ "^## \\[" ver "\\]" { flag=1; next }
+            /^## \[/ { flag=0 }
+            flag
+          ' CHANGELOG.md > release_notes.md
+          if [ ! -s release_notes.md ]; then
+            echo "No CHANGELOG section found for ${VERSION}" > release_notes.md
+          fi
+
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
-          generate_release_notes: true
+          body_path: release_notes.md
           files: |
             release/gizmosql-ui-linux-x64
             release/gizmosql-ui-linux-arm64

@@ -1,6 +1,6 @@
 {
   "name": "gizmosql-ui",
-  "version": "2.5.5",
+  "version": "2.5.6",
   "description": "GizmoSQL UI - A web-based SQL interface for GizmoSQL servers",
   "private": true,
   "bin": "launcher.js",
@@ -12,10 +12,10 @@
     "bundle": "pnpm build && node scripts/bundle.js",
     "package": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . --compress Brotli",
     "package:prepare": "pnpm build && node scripts/prepare-standalone.js",
-    "package:macos": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node22-macos-arm64 --compress Brotli",
-    "package:linux": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node22-linux-x64 --compress Brotli",
-    "package:linux-arm64": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node22-linux-arm64 --compress Brotli",
-    "package:windows": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node22-win-x64 --compress Brotli",
+    "package:macos": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node24-macos-arm64 --compress Brotli",
+    "package:linux": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node24-linux-x64 --compress Brotli",
+    "package:linux-arm64": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node24-linux-arm64 --compress Brotli",
+    "package:windows": "pnpm package:prepare && cd .next/standalone && npx @yao-pkg/pkg . -t node24-win-x64 --compress Brotli",
     "clean": "rm -rf dist .next node_modules"
   },
   "keywords": [
@@ -30,25 +30,25 @@
   "author": "GizmoData LLC",
   "license": "Apache-2.0",
   "dependencies": {
-    "@gizmodata/gizmosql-client": "^1.4.3",
+    "@gizmodata/gizmosql-client": "^1.4.4",
     "@monaco-editor/react": "^4.7.0",
-    "apache-arrow": "^21.1.0",
+    "apache-arrow": "^21.2.0",
     "lucide-react": "^0.577.0",
-    "next": "^16.1.6",
-    "parquet-wasm": "^0.7.1",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "react-icons": "^5.6.0"
+    "next": "^16.2.10",
+    "parquet-wasm": "^0.7.2",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-icons": "^5.7.0"
   },
   "devDependencies": {
-    "@next/eslint-plugin-next": "^16.1.6",
+    "@next/eslint-plugin-next": "^16.2.10",
     "@types/node": "^25.3.3",
-    "@types/react": "^19.2.14",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "@yao-pkg/pkg": "^6.14.1",
+    "@yao-pkg/pkg": "^6.21.0",
     "eslint": "^9.39.3",
     "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "typescript": "^5.9.3"
   },
   "pkg": {
@@ -58,10 +58,10 @@
       "public/**/*.*"
     ],
     "targets": [
-      "node22-macos-arm64",
-      "node22-linux-x64",
-      "node22-linux-arm64",
-      "node22-win-x64"
+      "node24-macos-arm64",
+      "node24-linux-x64",
+      "node24-linux-arm64",
+      "node24-win-x64"
     ],
     "outputPath": "../../dist"
   }

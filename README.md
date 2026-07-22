@@ -17,7 +17,9 @@ A web-based SQL interface for [GizmoSQL](https://github.com/gizmodata/gizmosql) 
 ### macOS (Homebrew)
 
 ```bash
-brew install gizmodata/tap/gizmosql-ui
+brew tap gizmodata/tap
+brew trust gizmodata/tap  # required as of Homebrew 6.0
+brew install gizmosql-ui
 gizmosql-ui
 ```
 
@@ -44,7 +46,7 @@ The UI will automatically open in your default browser at `http://localhost:3000
 
 #### Prerequisites
 
-- Node.js 22+
+- Node.js 24+
 - pnpm 9+
 
 #### Development

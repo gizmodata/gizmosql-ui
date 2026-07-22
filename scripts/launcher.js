@@ -15,7 +15,7 @@ const TPCH_ENABLED = ['1', 'true', 'yes'].includes(
 );
 
 // Read version from package.json
-let VERSION = '2.5.5';
+let VERSION = '2.5.6';
 try {
   const pkg = require('package.json');
   VERSION = pkg.version;

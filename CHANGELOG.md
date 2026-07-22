@@ -5,6 +5,20 @@ All notable changes to GizmoSQL UI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.6] - 2026-07-22
+
+### Fixed
+- Update `@gizmodata/gizmosql-client` to 1.4.4 — fixes a bug with prepared statements
+- Packaged binaries no longer crash on startup with `ERR_INSPECTOR_NOT_AVAILABLE` — the inspector shim now intercepts `require("node:inspector")` (used by Next.js 16.2), which bypassed the previous `_resolveFilename` hook
+
+### Changed
+- Bump dependencies: Next.js 16.2.10, React 19.2.7, apache-arrow 21.2.0, parquet-wasm 0.7.2, react-icons 5.7.0, @next/eslint-plugin-next 16.2.10, @yao-pkg/pkg 6.21.0, eslint-plugin-react-hooks 7.1.1
+- Build with Node.js 24: CI and packaged binaries now use Node 24 (previously Node 22)
+- README: Homebrew install instructions now include `brew trust gizmodata/tap` (required as of Homebrew 6.0)
+- CI: bump GitHub Actions to current majors (checkout v7, setup-node v7, cache v6, upload-artifact v7, download-artifact v8, attest-build-provenance v4, gh-release v3, pnpm/action-setup v6, azure/login v3)
+- CI: GitHub Release notes are now extracted from the tag's CHANGELOG section instead of auto-generated
+- CI: pnpm 11 (matching local); build-script approvals for esbuild/protobufjs/sharp recorded in `pnpm-workspace.yaml`
+
 ## [2.5.5] - 2026-05-18
 
 ### Added
