@@ -9,8 +9,10 @@ packages:
 allowBuilds:
   "@gizmodata/gizmosql-client": true
   "@apache-arrow/adbc-driver-manager": true
-  esbuild: set this to true or false
-  sharp: set this to true or false
+  # Explicitly declined (prebuilt/wasm fallbacks are used, matching the
+  # pre-allowBuilds behavior where these were auto-ignored):
+  "esbuild": false
+  "sharp": false
 
 # The 24h minimumReleaseAge supply-chain guard stays active for
 # third-party packages, but first-party @gizmodata releases are exempt —
