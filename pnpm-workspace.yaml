@@ -11,3 +11,9 @@ allowBuilds:
   "@apache-arrow/adbc-driver-manager": true
   esbuild: set this to true or false
   sharp: set this to true or false
+
+# The 24h minimumReleaseAge supply-chain guard stays active for
+# third-party packages, but first-party @gizmodata releases are exempt —
+# we release and consume them same-day by design.
+minimumReleaseAgeExclude:
+  - "@gizmodata/*"
