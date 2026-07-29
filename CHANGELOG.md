@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.6.0] - 2026-07-29
 
+### Removed
+- **Windows-on-ARM builds are temporarily unavailable**: the upstream
+  ADBC Node.js driver manager ships no `win32-arm64` native addon yet,
+  so the 2.0 client cannot run there. Windows-on-ARM users can run the
+  x64 build under Windows' built-in emulation; native arm64 builds
+  return when upstream publishes the addon (requested upstream).
+
 ### Changed
 - **Upgraded to `@gizmodata/gizmosql-client` 2.0** — the client is now
   powered by the [native Go GizmoSQL ADBC driver](https://github.com/gizmodata/gizmosql-adbc)

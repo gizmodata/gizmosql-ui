@@ -35,10 +35,12 @@ jobs:
             target: windows
             artifact: gizmosql-ui-win-x64.exe
             build-output: dist/gizmosql-ui.exe
-          - os: windows-11-arm
-            target: windows-arm64
-            artifact: gizmosql-ui-win-arm64.exe
-            build-output: dist/gizmosql-ui.exe
+          # windows-arm64 is temporarily dropped: the ADBC Node driver
+          # manager (@apache-arrow/adbc-driver-manager) ships no
+          # win32-arm64 native addon yet, so the 2.0 GizmoSQL client
+          # cannot run there. Windows-on-ARM users run the x64 build
+          # under Windows emulation. Re-add once upstream publishes a
+          # win32-arm64 package (requested upstream).
 
     name: Build (${{ matrix.target }})
     runs-on: ${{ matrix.os }}

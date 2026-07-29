@@ -65,7 +65,7 @@ jobs:
     environment: production
     strategy:
       matrix:
-        arch: [x64, arm64]
+        arch: [x64]  # arm64 dropped until upstream ADBC ships a win32-arm64 Node addon
     permissions:
       id-token: write
       contents: read
@@ -112,7 +112,7 @@ jobs:
     environment: production
     strategy:
       matrix:
-        arch: [x64, arm64]
+        arch: [x64]  # arm64 dropped until upstream ADBC ships a win32-arm64 Node addon
     permissions:
       id-token: write
       contents: read
@@ -247,23 +247,11 @@ jobs:
           name: gizmosql-ui-win-x64-signed
           path: artifacts/gizmosql-ui-win-x64-signed
 
-      - name: Download signed Windows arm64 artifact
-        uses: actions/download-artifact@v8
-        with:
-          name: gizmosql-ui-win-arm64-signed
-          path: artifacts/gizmosql-ui-win-arm64-signed
-
       - name: Download x64 MSI artifact
         uses: actions/download-artifact@v8
         with:
           name: gizmosql-ui-win-x64-msi
           path: artifacts/gizmosql-ui-win-x64-msi
-
-      - name: Download arm64 MSI artifact
-        uses: actions/download-artifact@v8
-        with:
-          name: gizmosql-ui-win-arm64-msi
-          path: artifacts/gizmosql-ui-win-arm64-msi
 
       - name: Prepare release assets
         run: |
@@ -272,9 +260,7 @@ jobs:
           cp artifacts/gizmosql-ui-linux-arm64/gizmosql-ui release/gizmosql-ui-linux-arm64
           cp artifacts/gizmosql-ui-macos-arm64-signed/gizmosql-ui release/gizmosql-ui-macos-arm64
           cp artifacts/gizmosql-ui-win-x64-signed/gizmosql-ui.exe release/gizmosql-ui-win-x64.exe
-          cp artifacts/gizmosql-ui-win-arm64-signed/gizmosql-ui.exe release/gizmosql-ui-win-arm64.exe
           cp artifacts/gizmosql-ui-win-x64-msi/GizmoSQL-UI-x64.msi release/GizmoSQL-UI-x64.msi
-          cp artifacts/gizmosql-ui-win-arm64-msi/GizmoSQL-UI-arm64.msi release/GizmoSQL-UI-arm64.msi
           cd release
           sha256sum * > checksums.txt || shasum -a 256 * > checksums.txt
 
@@ -299,9 +285,7 @@ jobs:
             release/gizmosql-ui-linux-arm64
             release/gizmosql-ui-macos-arm64
             release/gizmosql-ui-win-x64.exe
-            release/gizmosql-ui-win-arm64.exe
             release/GizmoSQL-UI-x64.msi
-            release/GizmoSQL-UI-arm64.msi
             release/checksums.txt
 
       - name: Update Homebrew formula
