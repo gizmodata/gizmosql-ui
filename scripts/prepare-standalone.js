@@ -119,15 +119,54 @@ const driversDir = path.join(clientDir, 'drivers');
 if (!fs.existsSync(driversDir) || fs.readdirSync(driversDir).length === 0) {
   throw new Error('runtime-libs: driver library was not downloaded during staging install');
 }
-// Plain tar + Node-side gzip: Windows' bsdtar fails spawning a gzip
-// child for -z, so compress with zlib instead (portable everywhere).
+// Pure-Node tar writer (platform tar is unreliable on Windows runners:
+// -z cannot spawn gzip, and long node_modules paths break -cf). Mirrors
+// the minimal reader in launcher.js: ustar headers, GNU 'L' entries for
+// long names, dirs + files only.
 const zlib = require('zlib');
-const rawTar = path.join(standaloneDir, 'runtime-libs.tar');
-execSync(`tar -cf "${rawTar}" -C "${stagingDir}" node_modules`, { stdio: 'inherit' });
+function tarHeader(name, size, type) {
+  const header = Buffer.alloc(512);
+  header.write(name.slice(0, 100), 0);
+  header.write('0000755\0', 100); // mode
+  header.write('0000000\0', 108); // uid
+  header.write('0000000\0', 116); // gid
+  header.write(size.toString(8).padStart(11, '0') + '\0', 124);
+  header.write('00000000000\0', 136); // mtime (zero: reproducible)
+  header.write('        ', 148); // checksum placeholder
+  header.write(type, 156);
+  header.write('ustar\0', 257);
+  header.write('00', 263);
+  let sum = 0;
+  for (const b of header) sum += b;
+  header.write(sum.toString(8).padStart(6, '0') + '\0 ', 148);
+  return header;
+}
+function tarEntry(chunks, name, data, type) {
+  if (name.length > 100) {
+    const nameBuf = Buffer.from(name + '\0');
+    chunks.push(tarHeader('././@LongLink', nameBuf.length, 'L'), nameBuf,
+      Buffer.alloc((512 - (nameBuf.length % 512)) % 512));
+  }
+  chunks.push(tarHeader(name, type === '5' ? 0 : data.length, type));
+  if (type !== '5' && data.length > 0) {
+    chunks.push(data, Buffer.alloc((512 - (data.length % 512)) % 512));
+  }
+}
+function tarTree(chunks, dir, rel) {
+  tarEntry(chunks, rel + '/', Buffer.alloc(0), '5');
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+    const abs = path.join(dir, entry.name);
+    const childRel = rel + '/' + entry.name;
+    if (entry.isDirectory()) tarTree(chunks, abs, childRel);
+    else if (entry.isFile()) tarEntry(chunks, childRel, fs.readFileSync(abs), '0');
+  }
+}
+const chunks = [];
+tarTree(chunks, path.join(stagingDir, 'node_modules'), 'node_modules');
+chunks.push(Buffer.alloc(1024));
 fs.writeFileSync(
   path.join(standaloneDir, 'runtime-libs.tgz'),
-  zlib.gzipSync(fs.readFileSync(rawTar), { level: 6 })
+  zlib.gzipSync(Buffer.concat(chunks), { level: 6 })
 );
-fs.rmSync(rawTar);
 fs.rmSync(stagingDir, { recursive: true, force: true });
 console.log('runtime-libs.tgz ready');
