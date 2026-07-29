@@ -119,8 +119,15 @@ const driversDir = path.join(clientDir, 'drivers');
 if (!fs.existsSync(driversDir) || fs.readdirSync(driversDir).length === 0) {
   throw new Error('runtime-libs: driver library was not downloaded during staging install');
 }
-execSync(`tar -czf "${path.join(standaloneDir, 'runtime-libs.tgz')}" -C "${stagingDir}" node_modules`, {
-  stdio: 'inherit',
-});
+// Plain tar + Node-side gzip: Windows' bsdtar fails spawning a gzip
+// child for -z, so compress with zlib instead (portable everywhere).
+const zlib = require('zlib');
+const rawTar = path.join(standaloneDir, 'runtime-libs.tar');
+execSync(`tar -cf "${rawTar}" -C "${stagingDir}" node_modules`, { stdio: 'inherit' });
+fs.writeFileSync(
+  path.join(standaloneDir, 'runtime-libs.tgz'),
+  zlib.gzipSync(fs.readFileSync(rawTar), { level: 6 })
+);
+fs.rmSync(rawTar);
 fs.rmSync(stagingDir, { recursive: true, force: true });
 console.log('runtime-libs.tgz ready');
