@@ -56,7 +56,8 @@
     "assets": [
       ".next/**/*",
       "node_modules/**/*",
-      "public/**/*.*"
+      "public/**/*.*",
+      "runtime-libs.tgz"
     ],
     "targets": [
       "node24-macos-arm64",

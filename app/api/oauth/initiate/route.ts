@@ -10,7 +10,21 @@ export async function POST(request: NextRequest) {
       initiateUrl = `${oauthBaseUrl}/oauth/initiate`;
     } else if (host) {
       const port = oauthServerPort || 31339;
-      const scheme = useTls ? 'https' : 'http';
+      // Try HTTPS first regardless of useTls (OAuth endpoints are
+      // typically TLS even when the caller didn't say so); fall back to
+      // HTTP only if HTTPS is unreachable.
+      if (useTls === false) {
+        const httpsUrl = `https://${host}:${port}/oauth/initiate`;
+        try {
+          const probe = await fetch(httpsUrl, { signal: AbortSignal.timeout(4000) });
+          if (probe.ok) {
+            return NextResponse.json(await probe.json());
+          }
+        } catch {
+          // fall through to the requested scheme
+        }
+      }
+      const scheme = useTls === false ? 'http' : 'https';
       initiateUrl = `${scheme}://${host}:${port}/oauth/initiate`;
     } else {
       return NextResponse.json({ error: 'oauthBaseUrl or host is required' }, { status: 400 });

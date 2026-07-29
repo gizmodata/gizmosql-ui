@@ -92,6 +92,51 @@ jobs:
         shell: bash
         run: pnpm package:${{ matrix.target }}
 
+      - name: Smoke test packed binary (release gate)
+        shell: bash
+        run: |
+          # Run the actual packaged executable and prove the ADBC client
+          # stack loads inside it — the class of failure a green
+          # `next build` cannot catch (pkg snapshot vs ESM/native deps).
+          BIN="${{ matrix.build-output }}"
+          chmod +x "$BIN" || true
+          PORT=3999 "./$BIN" > smoke.log 2>&1 &
+          BIN_PID=$!
+          for i in $(seq 1 30); do
+            sleep 2
+            if curl -sf "http://localhost:3999/api/health/driver" > health.json 2>/dev/null; then
+              break
+            fi
+          done
+          cat smoke.log || true
+          cat health.json || (echo "health endpoint never responded" && kill $BIN_PID && exit 1)
+          python3 -c "import json; d=json.load(open('health.json')); assert d.get('ok') is True, d" \
+            || { kill $BIN_PID; exit 1; }
+          echo "PACKED BINARY DRIVER HEALTH: OK"
+          kill $BIN_PID || true
+
+      - name: Full query smoke against live GizmoSQL (linux)
+        if: matrix.target == 'linux'
+        shell: bash
+        run: |
+          docker run --name smoke-gizmosql --detach --init \
+            --publish 31337:31337 --env TLS_ENABLED=1 \
+            --env GIZMOSQL_USERNAME=smoke --env GIZMOSQL_PASSWORD=smokepass \
+            gizmodata/gizmosql:latest
+          sleep 10
+          BIN="${{ matrix.build-output }}"
+          PORT=3998 "./$BIN" > smoke2.log 2>&1 &
+          BIN_PID=$!
+          sleep 5
+          RESP=$(curl -sf -X POST http://localhost:3998/api/connect \
+            -H 'content-type: application/json' \
+            -d '{"host":"localhost","port":31337,"username":"smoke","password":"smokepass","skipTlsVerify":true}')
+          echo "connect response: $RESP"
+          echo "$RESP" | python3 -c "import json,sys; d=json.load(sys.stdin); assert not d.get('error'), d"
+          echo "PACKED BINARY LIVE CONNECT: OK"
+          kill $BIN_PID || true
+          docker rm -f smoke-gizmosql
+
       - name: Generate artifact attestation
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: actions/attest-build-provenance@v4

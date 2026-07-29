@@ -1,6 +1,76 @@
 #!/usr/bin/env node
 
 const { exec } = require('child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+const os = require('node:os');
+const zlib = require('node:zlib');
+const Module = require('node:module');
+
+// ---------------------------------------------------------------------------
+// Runtime ADBC stack (packaged builds only).
+//
+// The GizmoSQL client depends on the ESM-only ADBC driver manager, a
+// native Node addon, and the native GizmoSQL driver library — none of
+// which can live inside pkg's snapshot (pkg transforms ESM sources and
+// the OS cannot dlopen from a virtual filesystem). They ship as an
+// opaque runtime-libs.tgz asset, extracted here to real disk on first
+// run, with require() redirected to the extracted copies.
+// ---------------------------------------------------------------------------
+
+function untarTo(buf, destRoot) {
+  let off = 0;
+  let pendingLongName = null;
+  while (off + 512 <= buf.length) {
+    const header = buf.subarray(off, off + 512);
+    off += 512;
+    if (header.every((b) => b === 0)) break;
+    const nameField = header.subarray(0, 100).toString('utf8').replace(/\0.*$/, '');
+    const prefix = header.subarray(345, 500).toString('utf8').replace(/\0.*$/, '');
+    const size = parseInt(header.subarray(124, 136).toString('utf8').trim(), 8) || 0;
+    const type = String.fromCharCode(header[156]);
+    const data = buf.subarray(off, off + size);
+    off += Math.ceil(size / 512) * 512;
+    let name = pendingLongName ?? (prefix ? `${prefix}/${nameField}` : nameField);
+    pendingLongName = null;
+    if (type === 'L') { pendingLongName = data.toString('utf8').replace(/\0.*$/, ''); continue; }
+    if (type === 'x' || type === 'g') continue; // pax extension headers
+    const dest = path.join(destRoot, name);
+    if (type === '5') fs.mkdirSync(dest, { recursive: true });
+    else if (type === '0' || type === '\0') {
+      fs.mkdirSync(path.dirname(dest), { recursive: true });
+      fs.writeFileSync(dest, data, { mode: 0o755 });
+    }
+  }
+}
+
+function setupRuntimeLibs(version) {
+  if (!process.pkg) return; // dev mode resolves normally
+  const cacheRoot =
+    process.platform === 'win32'
+      ? path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'), 'gizmosql-ui')
+      : path.join(os.homedir(), '.cache', 'gizmosql-ui');
+  const runtimeDir = path.join(cacheRoot, `runtime-v${version}`);
+  const marker = path.join(runtimeDir, '.complete');
+  if (!fs.existsSync(marker)) {
+    fs.rmSync(runtimeDir, { recursive: true, force: true });
+    const tgz = fs.readFileSync(path.join(__dirname, 'runtime-libs.tgz'));
+    untarTo(zlib.gunzipSync(tgz), runtimeDir);
+    fs.writeFileSync(marker, 'ok');
+  }
+  const redirected = ['@gizmodata/', '@apache-arrow/', 'apache-arrow'];
+  const realResolve = Module._resolveFilename;
+  Module._resolveFilename = function (request, ...rest) {
+    if (redirected.some((p) => request === p.replace(/\/$/, '') || request.startsWith(p))) {
+      try {
+        return realResolve.call(this, path.join(runtimeDir, 'node_modules', request), ...rest);
+      } catch {
+        // fall through to normal resolution
+      }
+    }
+    return realResolve.apply(this, [request, ...rest]);
+  };
+}
 
 process.env.NODE_ENV ??= 'production';
 process.env.NEXT_TELEMETRY_DISABLED ??= '1';
@@ -15,13 +85,18 @@ const TPCH_ENABLED = ['1', 'true', 'yes'].includes(
 );
 
 // Read version from package.json
-let VERSION = '2.5.8';
+let VERSION = '0.0.0';
 try {
-  const pkg = require('package.json');
-  VERSION = pkg.version;
+  VERSION = require(path.join(__dirname, 'package.json')).version;
 } catch {
-  // Ignore if package.json not found
+  try {
+    VERSION = require('package.json').version;
+  } catch {
+    // keep fallback — cache dir still works, just not version-keyed
+  }
 }
+
+setupRuntimeLibs(VERSION);
 
 /**
  * Open browser using native system commands (pkg-compatible)

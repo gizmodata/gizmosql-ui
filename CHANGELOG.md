@@ -5,6 +5,29 @@ All notable changes to GizmoSQL UI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.1] - 2026-07-29
+
+### Fixed
+- **v2.6.0 packaged binaries could not perform any database operation**
+  (`ReferenceError: module is not defined in ES module scope`): pkg's
+  snapshot transforms the ESM-only ADBC driver manager into broken
+  hybrid sources, and native libraries cannot load from a snapshot. The
+  ADBC stack now ships as an opaque `runtime-libs.tgz` asset that the
+  launcher extracts to a version-keyed cache dir on first run,
+  redirecting `require()` to the real-disk copies. Verified end-to-end:
+  driver health, live connect/query, and OAuth discovery against a TLS
+  server all pass through the packaged binary.
+- OAuth initiate proxy now tries HTTPS first when falling back to
+  manual host/port (an `ECONNRESET` resulted from probing HTTP against
+  TLS-only OAuth endpoints when discovery had failed).
+
+### Added
+- `/api/health/driver` endpoint proving the ADBC client stack loads and
+  the native driver is present — and **CI now runs the packed binary**
+  on every platform, gating releases on that health check (plus a full
+  live connect/query smoke on Linux). The v2.6.0 regression class can
+  no longer ship.
+
 ## [2.6.0] - 2026-07-29
 
 ### Removed

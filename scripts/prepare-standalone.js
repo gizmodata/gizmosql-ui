@@ -96,3 +96,31 @@ content = shim + content;
 fs.writeFileSync(serverJs, content);
 
 console.log('Standalone preparation complete.');
+
+// Step 6: Assemble runtime-libs.tgz — the ADBC stack shipped as an
+// OPAQUE tarball asset. pkg transforms any .js it can see in the
+// snapshot (breaking the ESM driver manager) and native libraries
+// cannot dlopen from a snapshot, so the launcher extracts this tarball
+// to real disk at first run and redirects require() to it.
+const { execSync } = require('child_process');
+console.log('Assembling runtime-libs.tgz (clean npm closure of the ADBC client)...');
+const stagingDir = path.join(standaloneDir, 'runtime-staging');
+fs.rmSync(stagingDir, { recursive: true, force: true });
+fs.mkdirSync(stagingDir, { recursive: true });
+const clientVersion = require('@gizmodata/gizmosql-client/package.json').version;
+execSync(
+  `npm install --prefix "${stagingDir}" --omit=dev --no-audit --no-fund ` +
+    `--no-package-lock @gizmodata/gizmosql-client@${clientVersion}`,
+  { stdio: 'inherit' }
+);
+// Sanity: the postinstall must have downloaded the platform driver.
+const clientDir = path.join(stagingDir, 'node_modules', '@gizmodata', 'gizmosql-client');
+const driversDir = path.join(clientDir, 'drivers');
+if (!fs.existsSync(driversDir) || fs.readdirSync(driversDir).length === 0) {
+  throw new Error('runtime-libs: driver library was not downloaded during staging install');
+}
+execSync(`tar -czf "${path.join(standaloneDir, 'runtime-libs.tgz')}" -C "${stagingDir}" node_modules`, {
+  stdio: 'inherit',
+});
+fs.rmSync(stagingDir, { recursive: true, force: true });
+console.log('runtime-libs.tgz ready');

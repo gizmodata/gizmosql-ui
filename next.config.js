@@ -3,8 +3,15 @@ const nextConfig = {
   // Output standalone build for packaging
   output: 'standalone',
 
-  // Externalize gRPC/protobuf native packages from bundling
-  serverExternalPackages: ['@gizmodata/gizmosql-client', '@grpc/grpc-js', 'google-protobuf'],
+  // Externalize the ADBC stack (ESM + native addon + driver library)
+  // so routes require() it at runtime — the packaged launcher redirects
+  // those requires to real-disk extracted copies (pkg's snapshot
+  // mangles ESM and cannot dlopen natives).
+  serverExternalPackages: [
+    '@gizmodata/gizmosql-client',
+    '@apache-arrow/adbc-driver-manager',
+    'apache-arrow',
+  ],
 
   // Enable server actions
   experimental: {
