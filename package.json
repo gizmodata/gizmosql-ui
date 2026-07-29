@@ -1,6 +1,6 @@
 {
   "name": "gizmosql-ui",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "description": "GizmoSQL UI - A web-based SQL interface for GizmoSQL servers",
   "private": true,
   "bin": "launcher.js",
