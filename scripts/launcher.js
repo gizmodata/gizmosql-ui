@@ -44,6 +44,34 @@ function untarTo(buf, destRoot) {
   }
 }
 
+// Windows + pkg: Next's route modules build manifest paths by joining
+// cwd with the (absolute) snapshot dir, and win32 path.join does not
+// reset at a drive-lettered segment — producing mangled paths like
+// D:\cwd\C:\snapshot\...\C:\snapshot\...\routes-manifest.json.
+// Normalize any path with an embedded snapshot root back to its last
+// snapshot segment. (POSIX systems are immune; their smoke gates pass
+// without this.)
+function setupWindowsSnapshotPathFix() {
+  if (!process.pkg || process.platform !== 'win32') return;
+  const MARKER = 'C:\\snapshot\\';
+  const normalize = (p) => {
+    if (typeof p !== 'string') return p;
+    const idx = p.lastIndexOf(MARKER);
+    return idx > 0 ? p.slice(idx) : p;
+  };
+  const wrap = (obj, names) => {
+    for (const name of names) {
+      const orig = obj[name];
+      if (typeof orig !== 'function') continue;
+      obj[name] = function (p, ...rest) {
+        return orig.call(this, normalize(p), ...rest);
+      };
+    }
+  };
+  wrap(fs, ['readFileSync', 'openSync', 'existsSync', 'statSync', 'readdirSync', 'open', 'readFile', 'stat', 'readdir']);
+  wrap(fs.promises, ['readFile', 'open', 'stat', 'readdir', 'access']);
+}
+
 function setupRuntimeLibs(version) {
   if (!process.pkg) return; // dev mode resolves normally
   const cacheRoot =
@@ -96,6 +124,7 @@ try {
   }
 }
 
+setupWindowsSnapshotPathFix();
 setupRuntimeLibs(VERSION);
 
 /**
