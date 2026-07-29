@@ -5,6 +5,18 @@ All notable changes to GizmoSQL UI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.0] - 2026-07-29
+
+### Changed
+- **Upgraded to `@gizmodata/gizmosql-client` 2.0** — the client is now
+  powered by the [native Go GizmoSQL ADBC driver](https://github.com/gizmodata/gizmosql-adbc)
+  (auto-downloaded and SHA-256-verified at install time) via the ADBC
+  driver manager, replacing the pure-TypeScript Flight SQL transport.
+  Same client API (zero application changes); the UI gains the shared
+  driver's DDL/DML immediate execution, `RETURNING` support,
+  `gizmosql://` TLS-by-default transport, and geometry-preserving
+  ingest. Note: requires Node.js >= 22 at runtime.
+
 ## [2.5.8] - 2026-07-22
 
 ### Fixed

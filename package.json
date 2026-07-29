@@ -31,7 +31,7 @@
   "author": "GizmoData LLC",
   "license": "Apache-2.0",
   "dependencies": {
-    "@gizmodata/gizmosql-client": "^1.4.4",
+    "@gizmodata/gizmosql-client": "^2.0.0",
     "@monaco-editor/react": "^4.7.0",
     "apache-arrow": "^21.2.0",
     "lucide-react": "^0.577.0",
