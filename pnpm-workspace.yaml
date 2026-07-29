@@ -1,9 +1,13 @@
-allowBuilds:
-  esbuild: true
-  protobufjs: true
-  sharp: true
+packages:
+  - "."
 
-# Exempt our own packages from pnpm's minimumReleaseAge supply-chain policy,
-# so releases can consume a just-published @gizmodata/gizmosql-client.
-minimumReleaseAgeExclude:
-  - "@gizmodata/*"
+# Build/postinstall scripts allowed to run (pnpm blocks them by
+# default): the GizmoSQL client downloads its native ADBC driver
+# library at install time, and the ADBC driver manager sets up its
+# native addon. (esbuild/sharp remain blocked as before — they have
+# prebuilt fallbacks.)
+allowBuilds:
+  "@gizmodata/gizmosql-client": true
+  "@apache-arrow/adbc-driver-manager": true
+  esbuild: set this to true or false
+  sharp: set this to true or false
