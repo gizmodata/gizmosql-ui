@@ -113,12 +113,18 @@ docker run --name gizmosql \
 ```
 
 Then connect GizmoSQL UI using:
-- Host: `localhost`
+- Host: `127.0.0.1`
 - Port: `31337`
 - Username: `gizmosql_user`
 - Password: `gizmosql_password`
 - Use TLS: enabled
 - Skip TLS Verify: enabled (for self-signed certificate)
+
+> **Use `127.0.0.1`, not `localhost`.** On this machine `localhost` resolves
+> to both `::1` and `127.0.0.1`; under Docker Desktop's loopback
+> port-forwarding, connecting via the IPv6 address stalls for ~10 seconds
+> before the driver falls back to IPv4, adding a consistent ~10s delay to
+> every connect. `127.0.0.1` skips that entirely (single-digit ms).
 
 ## Configuration
 
@@ -126,7 +132,7 @@ Then connect GizmoSQL UI using:
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| Host | GizmoSQL server hostname or IP | localhost |
+| Host | GizmoSQL server hostname or IP | 127.0.0.1 |
 | Port | GizmoSQL server port | 31337 |
 | Username | Authentication username | (required) |
 | Password | Authentication password | (required) |
@@ -281,9 +287,10 @@ pnpm dev
 > `pnpm build && pnpm start` (the production standalone server) works too.
 
 **5. Reproduce a trace:** open `http://localhost:3000`, connect using the
-credentials from step 1 (Host `localhost`, Port `31337`, Username
-`gizmosql_user`, Password `gizmosql_password`, Use TLS enabled, Skip TLS
-Verify enabled), and run any query (e.g. `SELECT count(*) FROM orders`).
+credentials from step 1 (Host `127.0.0.1` — not `localhost`, see the note
+above — Port `31337`, Username `gizmosql_user`, Password
+`gizmosql_password`, Use TLS enabled, Skip TLS Verify enabled), and run any
+query (e.g. `SELECT count(*) FROM orders`).
 
 **6. Confirm the trace arrived** by tailing the collector's log — you should
 see `Database.Open` and `ExecuteQuery` spans appear within a few seconds of
