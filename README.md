@@ -266,12 +266,8 @@ OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf \
 pnpm dev
 ```
 
-> Use `pnpm dev` here, not `pnpm build && pnpm start` — the production
-> standalone build only picks up the native driver's runtime files when
-> assembled via `pnpm package` (see [Creating Standalone
-> Executables](#creating-standalone-executables)), so a plain `pnpm start`
-> will fail to connect. `pnpm dev` runs against `node_modules` directly and
-> works out of the box.
+> `pnpm dev` is the quickest way to try this since it skips the build step.
+> `pnpm build && pnpm start` (the production standalone server) works too.
 
 **5. Reproduce a trace:** open `http://localhost:3000`, connect using the
 credentials from step 1 (Host `localhost`, Port `31337`, Username

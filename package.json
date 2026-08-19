@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build --webpack",
+    "postbuild": "node scripts/postbuild.js",
     "start": "node .next/standalone/server.js",
     "lint": "eslint .",
     "bundle": "pnpm build && node scripts/bundle.js",
