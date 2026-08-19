@@ -138,6 +138,60 @@ Then connect GizmoSQL UI using:
 | Variable | Description | Default |
 |----------|-------------|---------|
 | PORT | HTTP server port | 3000 |
+| GIZMOSQL_OTEL_TRACES_EXPORTER | Enables driver tracing: `none`, `otlp`, `console`, or `adbcfile` | none |
+| GIZMOSQL_OTEL_TRACES_FOLDER_PATH | Output directory for the `adbcfile` exporter | — |
+| GIZMOSQL_OTEL_TRACE_PARENT | W3C `traceparent` to join an existing distributed trace | — |
+| ADBC_DRIVER_FLIGHTSQL_LOG_LEVEL | Structured driver log level: `debug`, `info`, `warn`, `error` | — |
+| OTEL_EXPORTER_OTLP_ENDPOINT | Collector endpoint, used when `GIZMOSQL_OTEL_TRACES_EXPORTER=otlp` | — |
+| OTEL_EXPORTER_OTLP_PROTOCOL | OTLP wire protocol — use `http/protobuf` (see note below) | — |
+
+### Enabling Driver Tracing (for Support/Diagnostics)
+
+GizmoSQL UI connects through the native GizmoSQL ADBC driver, which can emit
+OpenTelemetry trace spans for every query lifecycle stage (`Database.Open`,
+`Prepare`, `ExecuteQuery`, `ExecuteUpdate`). This is off by default and is
+controlled entirely by environment variables set on the GizmoSQL UI process
+— there is nothing to configure in the browser UI.
+
+**Option 1 — print traces to the terminal (quickest way to check it works):**
+
+```bash
+GIZMOSQL_OTEL_TRACES_EXPORTER=console pnpm start
+```
+
+Run a query in the UI and you'll see JSON span output in the terminal
+GizmoSQL UI is running in.
+
+**Option 2 — send traces to an OpenTelemetry collector:**
+
+```bash
+GIZMOSQL_OTEL_TRACES_EXPORTER=otlp \
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 \
+OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf \
+pnpm start
+```
+
+> **Note:** use `http/protobuf`, not `grpc`. The `grpc` protocol failed to
+> connect to a standard OTel Collector in testing; `http/protobuf` against
+> the collector's OTLP/HTTP port (`4318` by default) works reliably.
+
+**Option 3 — write traces to local files** (useful for collecting a support
+bundle without standing up a collector):
+
+```bash
+GIZMOSQL_OTEL_TRACES_EXPORTER=adbcfile \
+GIZMOSQL_OTEL_TRACES_FOLDER_PATH=/tmp/gizmosql-traces \
+pnpm start
+```
+
+**Driver debug logs**, independent of tracing, are enabled the same way:
+
+```bash
+ADBC_DRIVER_FLIGHTSQL_LOG_LEVEL=debug pnpm start
+```
+
+Same variables apply when running a packaged executable
+(`./dist/gizmosql-ui-macos-arm64`, etc.) — just set them before launching it.
 
 ## Architecture
 
