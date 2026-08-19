@@ -190,6 +190,108 @@ pnpm start
 ADBC_DRIVER_FLIGHTSQL_LOG_LEVEL=debug pnpm start
 ```
 
+### Trying It Yourself: Full Local Test Setup
+
+These steps reproduce a complete tracing setup on your own machine — a test
+GizmoSQL server, a local OTel collector to receive traces, and GizmoSQL UI
+with tracing turned on. Requires [Docker](https://www.docker.com/) and this
+repo checked out locally.
+
+**1. Start a test GizmoSQL server** (same one used in
+[Starting a GizmoSQL Server](#starting-a-gizmosql-server-optional) above):
+
+```bash
+docker run --name gizmosql \
+           --detach \
+           --rm \
+           --tty \
+           --init \
+           --publish 31337:31337 \
+           --env TLS_ENABLED="1" \
+           --env GIZMOSQL_USERNAME="gizmosql_user" \
+           --env GIZMOSQL_PASSWORD="gizmosql_password" \
+           --env PRINT_QUERIES="1" \
+           --env INIT_SQL_COMMANDS="CALL dbgen(sf=0.01);" \
+           --pull always \
+           gizmodata/gizmosql:latest
+```
+
+**2. Create a minimal OTel collector config** that just prints received
+traces to its own log:
+
+```bash
+cat > /tmp/otel-collector-config.yaml <<'EOF'
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+exporters:
+  debug:
+    verbosity: detailed
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [debug]
+EOF
+```
+
+**3. Start the collector**, mounting that config in:
+
+```bash
+docker run --name otel-collector \
+           --detach \
+           --rm \
+           --publish 4317:4317 \
+           --publish 4318:4318 \
+           --volume /tmp/otel-collector-config.yaml:/etc/otelcol/config.yaml \
+           --pull always \
+           otel/opentelemetry-collector:latest \
+           --config=/etc/otelcol/config.yaml
+```
+
+**4. Start GizmoSQL UI with tracing pointed at the collector:**
+
+```bash
+pnpm install   # first time only
+
+GIZMOSQL_OTEL_TRACES_EXPORTER=otlp \
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 \
+OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf \
+pnpm dev
+```
+
+> Use `pnpm dev` here, not `pnpm build && pnpm start` — the production
+> standalone build only picks up the native driver's runtime files when
+> assembled via `pnpm package` (see [Creating Standalone
+> Executables](#creating-standalone-executables)), so a plain `pnpm start`
+> will fail to connect. `pnpm dev` runs against `node_modules` directly and
+> works out of the box.
+
+**5. Reproduce a trace:** open `http://localhost:3000`, connect using the
+credentials from step 1 (Host `localhost`, Port `31337`, Username
+`gizmosql_user`, Password `gizmosql_password`, Use TLS enabled, Skip TLS
+Verify enabled), and run any query (e.g. `SELECT count(*) FROM orders`).
+
+**6. Confirm the trace arrived** by tailing the collector's log — you should
+see `Database.Open` and `ExecuteQuery` spans appear within a few seconds of
+running the query:
+
+```bash
+docker logs -f otel-collector
+```
+
+**7. Clean up** when you're done:
+
+```bash
+docker stop gizmosql otel-collector
+```
+
 Same variables apply when running a packaged executable
 (`./dist/gizmosql-ui-macos-arm64`, etc.) — just set them before launching it.
 
