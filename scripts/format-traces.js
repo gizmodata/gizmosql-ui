@@ -36,9 +36,12 @@ function formatSpan(span) {
     durationMs >= 1000 ? `${(durationMs / 1000).toFixed(2)}s` : `${durationMs}ms`;
   const time = start.toLocaleTimeString('en-US', { hour12: false });
   const code = span.Status?.Code ?? 'Unknown';
-  const status =
-    code === 'Ok' ? 'OK' : `${code}${span.Status?.Description ? `: ${span.Status.Description}` : ''}`;
+  const status = code === 'Ok' ? 'OK' : code;
+  // Status.Description carries the driver's error text on failure; it's
+  // always present but empty on success, so surface it explicitly rather
+  // than silently swallowing it.
+  const description = span.Status?.Description || '(no description)';
   const traceId = (span.SpanContext?.TraceID ?? '').slice(0, 8);
 
-  return `[${time}] ${span.Name.padEnd(32)} ${duration.padStart(8)}  ${status}  (${traceId})`;
+  return `[${time}] ${span.Name.padEnd(32)} ${duration.padStart(8)}  ${status.padEnd(6)}  ${description}  (${traceId})`;
 }

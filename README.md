@@ -168,15 +168,18 @@ GIZMOSQL_OTEL_TRACES_EXPORTER=console pnpm start
 Run a query in the UI and you'll see raw span JSON in the terminal GizmoSQL
 UI is running in — one line per span, but noisy. Pipe it through
 `scripts/format-traces.js` for a compact one-line-per-span summary instead;
-it passes all other output through unchanged:
+it passes all other output through unchanged. Each span's `Status.Description`
+(the driver's own error text, when a query fails) is always shown, not just
+on failure:
 
 ```bash
 GIZMOSQL_OTEL_TRACES_EXPORTER=console pnpm start | node scripts/format-traces.js
 ```
 
 ```
-[00:11:21] FlightSQLDatabase.Open             10.29s  OK  (18cb8529)
-[00:11:32] FlightSQLStatement.ExecuteQuery      25ms  OK  (cd297969)
+[00:44:51] FlightSQLDatabase.Open               11ms  OK      (no description)  (16b95fe0)
+[00:44:51] FlightSQLStatement.ExecuteQuery       2ms  OK      (no description)  (21db1435)
+[00:44:51] FlightSQLStatement.ExecuteQuery       5ms  Error   Invalid Argument: [FlightSQL] Can't prepare statement: 'SELCT this is not valid sql' - Error: Parser Error: syntax error at or near "SELCT" (a8ed432c)
 ```
 
 **Option 2 — send traces to an OpenTelemetry collector:**
