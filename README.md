@@ -159,8 +159,19 @@ controlled entirely by environment variables set on the GizmoSQL UI process
 GIZMOSQL_OTEL_TRACES_EXPORTER=console pnpm start
 ```
 
-Run a query in the UI and you'll see JSON span output in the terminal
-GizmoSQL UI is running in.
+Run a query in the UI and you'll see raw span JSON in the terminal GizmoSQL
+UI is running in — one line per span, but noisy. Pipe it through
+`scripts/format-traces.js` for a compact one-line-per-span summary instead;
+it passes all other output through unchanged:
+
+```bash
+GIZMOSQL_OTEL_TRACES_EXPORTER=console pnpm start | node scripts/format-traces.js
+```
+
+```
+[00:11:21] FlightSQLDatabase.Open             10.29s  OK  (18cb8529)
+[00:11:32] FlightSQLStatement.ExecuteQuery      25ms  OK  (cd297969)
+```
 
 **Option 2 — send traces to an OpenTelemetry collector:**
 
