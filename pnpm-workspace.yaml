@@ -19,3 +19,6 @@ allowBuilds:
 # we release and consume them same-day by design.
 minimumReleaseAgeExclude:
   - "@gizmodata/*"
+
+patchedDependencies:
+  '@gizmodata/gizmosql-client@2.0.0': patches/@gizmodata__gizmosql-client@2.0.0.patch

@@ -4,13 +4,16 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  '@gizmodata/gizmosql-client@2.0.0': 59600c83e0b67c6497486cc32714cb31b3b893f9f180a8e74e3d05d5cd0df187
+
 importers:
 
   .:
     dependencies:
       '@gizmodata/gizmosql-client':
         specifier: ^2.0.0
-        version: 2.0.0
+        version: 2.0.0(patch_hash=59600c83e0b67c6497486cc32714cb31b3b893f9f180a8e74e3d05d5cd0df187)
       '@monaco-editor/react':
         specifier: ^4.7.0
         version: 4.7.0(monaco-editor@0.55.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -2261,7 +2264,7 @@ snapshots:
       '@eslint/core': 0.17.0
       levn: 0.4.1
 
-  '@gizmodata/gizmosql-client@2.0.0':
+  '@gizmodata/gizmosql-client@2.0.0(patch_hash=59600c83e0b67c6497486cc32714cb31b3b893f9f180a8e74e3d05d5cd0df187)':
     dependencies:
       '@apache-arrow/adbc-driver-manager': 0.24.0(apache-arrow@21.2.0)
       apache-arrow: 21.2.0

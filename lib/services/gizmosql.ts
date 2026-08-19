@@ -22,6 +22,35 @@ interface ArrowRow {
   [key: string]: unknown;
 }
 
+/**
+ * Maps operator-set env vars onto the GizmoSQL ADBC driver's telemetry
+ * database options (adbc.telemetry.*), giving support/ops staff a way to
+ * turn on driver-level OpenTelemetry tracing for a whole deployment
+ * without a UI toggle. The OTLP endpoint itself is configured separately
+ * via the driver's own standard OTEL_EXPORTER_OTLP_* env vars, which the
+ * native driver reads directly from the process environment.
+ */
+function telemetryOptionsFromEnv(): Record<string, string> {
+  const options: Record<string, string> = {};
+
+  const exporter = process.env.GIZMOSQL_OTEL_TRACES_EXPORTER;
+  if (exporter) {
+    options['adbc.telemetry.traces_exporter'] = exporter;
+  }
+
+  const folderPath = process.env.GIZMOSQL_OTEL_TRACES_FOLDER_PATH;
+  if (folderPath) {
+    options['adbc.telemetry.traces_folder_path'] = folderPath;
+  }
+
+  const traceParent = process.env.GIZMOSQL_OTEL_TRACE_PARENT;
+  if (traceParent) {
+    options['adbc.telemetry.trace_parent'] = traceParent;
+  }
+
+  return options;
+}
+
 export class GizmoSQLService {
   private client: FlightSQLClient | null = null;
   private config: GizmoSQLConfig;
@@ -51,6 +80,7 @@ export class GizmoSQLService {
       password: this.config.password,
       plaintext: !this.config.useTls,
       tlsSkipVerify: this.config.skipTlsVerify,
+      extraOptions: telemetryOptionsFromEnv(),
     });
 
     // Explicitly connect/authenticate first so auth errors are surfaced

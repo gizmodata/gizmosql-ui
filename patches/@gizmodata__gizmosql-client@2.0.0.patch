@@ -1,0 +1,32 @@
+diff --git a/dist/flightsql-client.js b/dist/flightsql-client.js
+index a2d7d880c307511a333e6f29999c5206ef9e549f..d3e6c4264e1169e8969dcfa551e124c629b0c74e 100644
+--- a/dist/flightsql-client.js
++++ b/dist/flightsql-client.js
+@@ -79,6 +79,9 @@ class FlightSQLClient {
+             options.username = this.config.username;
+             options.password = this.config.password;
+         }
++        if (this.config.extraOptions) {
++            Object.assign(options, this.config.extraOptions);
++        }
+         return options;
+     }
+     async connect() {
+diff --git a/dist/types.d.ts b/dist/types.d.ts
+index a9299e80c2039ffef0220f89f1cd433040626335..f2a0e7e4e97f5867ac6984c01904cf94e40b5dfc 100644
+--- a/dist/types.d.ts
++++ b/dist/types.d.ts
+@@ -8,6 +8,13 @@ export interface FlightClientConfig {
+     token?: string;
+     /** OAuth HTTP port probed by discoverOAuthUrl() (default 31339). */
+     oauthPort?: number;
++    /**
++     * Raw ADBC database options merged in verbatim (e.g.
++     * `adbc.telemetry.traces_exporter`). Applied last, after the options
++     * this client derives from the rest of the config, so entries here
++     * can override the derived ones.
++     */
++    extraOptions?: Record<string, string>;
+ }
+ export type FlightSQLClientConfig = FlightClientConfig;
+ export interface PreparedStatement {
