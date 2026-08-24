@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@gizmodata/gizmosql-client':
-        specifier: ^2.0.0
-        version: 2.0.0
+        specifier: ^2.0.1
+        version: 2.0.1
       '@monaco-editor/react':
         specifier: ^4.7.0
         version: 4.7.0(monaco-editor@0.55.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -368,8 +368,8 @@ packages:
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@gizmodata/gizmosql-client@2.0.0':
-    resolution: {integrity: sha512-AdOKCmh/N4XxfsxzlKo8kt/H/mUjuPSH43L0S5W87EVoOqdyPmeADyAZcTSSxTZWgqt1B0HgGVeDOPv6jVal+A==}
+  '@gizmodata/gizmosql-client@2.0.1':
+    resolution: {integrity: sha512-dyXF/Rskib5ZU9/YyWHH0BiM4fcfSyfSLPe4Y7A9FdxYEXBzAzd8zgTpR4X7HFlr6IEY+tJUlYuN9+dNTGR1jg==}
     engines: {node: '>=22.0.0'}
 
   '@humanfs/core@0.19.1':
@@ -1021,6 +1021,7 @@ packages:
   eslint@9.39.3:
     resolution: {integrity: sha512-VmQ+sifHUbI/IcSopBCF/HO3YiHQx/AVd3UVyYL6weuwW+HvON9VYn5l6Zl1WZzPWXPNZrSQpxwkkZ/VuvJZzg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -2261,7 +2262,7 @@ snapshots:
       '@eslint/core': 0.17.0
       levn: 0.4.1
 
-  '@gizmodata/gizmosql-client@2.0.0':
+  '@gizmodata/gizmosql-client@2.0.1':
     dependencies:
       '@apache-arrow/adbc-driver-manager': 0.24.0(apache-arrow@21.2.0)
       apache-arrow: 21.2.0
