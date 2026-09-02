@@ -1,6 +1,6 @@
 {
   "name": "gizmosql-ui",
-  "version": "2.6.2",
+  "version": "2.6.3",
   "description": "GizmoSQL UI - A web-based SQL interface for GizmoSQL servers",
   "private": true,
   "bin": "launcher.js",
@@ -31,7 +31,7 @@
   "author": "GizmoData LLC",
   "license": "Apache-2.0",
   "dependencies": {
-    "@gizmodata/gizmosql-client": "^2.0.1",
+    "@gizmodata/gizmosql-client": "^2.1.0",
     "@monaco-editor/react": "^4.7.0",
     "apache-arrow": "^21.2.0",
     "lucide-react": "^0.577.0",

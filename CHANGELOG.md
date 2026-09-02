@@ -5,6 +5,18 @@ All notable changes to GizmoSQL UI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.3] - 2026-09-02
+
+### Changed
+- Bumped `@gizmodata/gizmosql-client` to ^2.1.0. The client is now an ES
+  module (loaded unchanged through `serverExternalPackages` and the
+  packaged launcher's real-disk `require()` redirect), adds SQL parameter
+  binding, and bundles the `gizmosql-adbc` v2.0.10 native driver
+  (auto-prepare on bind, server-side query cancellation). No UI code
+  changes were needed; verified with `next build` and live
+  connect/query/metadata/OAuth-discovery routes against a GizmoSQL
+  container.
+
 ## [2.6.2] - 2026-08-24
 
 ### Changed
