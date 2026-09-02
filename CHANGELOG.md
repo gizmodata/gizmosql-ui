@@ -5,6 +5,19 @@ All notable changes to GizmoSQL UI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.4] - 2026-09-02
+
+### Fixed
+- **Packaged binaries could not load the ES-module client** (v2.6.3, never
+  released: its release build failed the packed-binary smoke with
+  `ERR_MODULE_NOT_FOUND: Cannot find package '@gizmodata/gizmosql-client'`).
+  Next compiles routes to `import()` the ESM client, and Node's ESM
+  resolver ignores the launcher's `Module._resolveFilename` redirect,
+  so it searched pkg's snapshot instead of the extracted runtime libs.
+  The launcher now also registers a `module.registerHooks` resolve hook,
+  which covers both `require()` and `import()`, redirecting the ADBC
+  stack to the real-disk copies.
+
 ## [2.6.3] - 2026-09-02
 
 ### Changed

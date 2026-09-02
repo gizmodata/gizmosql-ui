@@ -87,17 +87,45 @@ function setupRuntimeLibs(version) {
     fs.writeFileSync(marker, 'ok');
   }
   const redirected = ['@gizmodata/', '@apache-arrow/', 'apache-arrow'];
+  const isRedirected = (request) =>
+    redirected.some((p) => request === p.replace(/\/$/, '') || request.startsWith(p));
+  const runtimeModules = path.join(runtimeDir, 'node_modules');
+
+  // CommonJS require() path.
   const realResolve = Module._resolveFilename;
   Module._resolveFilename = function (request, ...rest) {
-    if (redirected.some((p) => request === p.replace(/\/$/, '') || request.startsWith(p))) {
+    if (isRedirected(request)) {
       try {
-        return realResolve.call(this, path.join(runtimeDir, 'node_modules', request), ...rest);
+        return realResolve.call(this, path.join(runtimeModules, request), ...rest);
       } catch {
         // fall through to normal resolution
       }
     }
     return realResolve.apply(this, [request, ...rest]);
   };
+
+  // ES module import() path. @gizmodata/gizmosql-client >= 2.1 is an ES
+  // module, so Next's compiled routes load it with import() rather than
+  // require(); that goes through Node's ESM resolver, which ignores
+  // Module._resolveFilename and would look inside pkg's snapshot. The
+  // synchronous module hooks (Node >= 22.15 / 24) see both loaders, so
+  // resolve redirected packages as if imported from the runtime dir.
+  if (typeof Module.registerHooks === 'function') {
+    const { pathToFileURL } = require('node:url');
+    const runtimeParent = pathToFileURL(path.join(runtimeModules, '__launcher__.js')).href;
+    Module.registerHooks({
+      resolve(specifier, context, nextResolve) {
+        if (isRedirected(specifier)) {
+          try {
+            return nextResolve(specifier, { ...context, parentURL: runtimeParent });
+          } catch {
+            // fall through to normal resolution
+          }
+        }
+        return nextResolve(specifier, context);
+      },
+    });
+  }
 }
 
 process.env.NODE_ENV ??= 'production';
