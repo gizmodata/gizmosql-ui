@@ -151,6 +151,15 @@ function appReducer(state: AppState, action: Action): AppState {
 const DEFAULT_PAGE_SIZE = 1000;
 
 // Context
+// Client-generated id for a statement, so it can be cancelled server-side.
+// crypto.randomUUID needs a secure context; fall back for plain-HTTP hosts.
+function newQueryId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `q-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 interface AppContextType {
   state: AppState;
   // Runtime config (launch flags) — true when the TPC-H query selector is enabled
@@ -176,6 +185,7 @@ interface AppContextType {
   updateCellSql: (notebookId: string, cellId: string, sql: string) => void;
   updateCellServer: (notebookId: string, cellId: string, serverId: string | null) => void;
   executeCell: (notebookId: string, cellId: string) => Promise<void>;
+  cancelCell: (notebookId: string, cellId: string) => Promise<void>;
   fetchCellPage: (notebookId: string, cellId: string, page: number) => Promise<void>;
   // Schema
   getServerCatalogs: (serverId: string) => Promise<string[]>;
@@ -192,6 +202,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const hasHydrated = useRef(false);
   const hasAutoConnected = useRef(false);
   const [enableTpch, setEnableTpch] = useState(false);
+  // Server-side query id (plus the session it runs on) for each cell whose
+  // statement is in flight, so cancelCell() can stop it
+  const runningQueries = useRef(new Map<string, { queryId: string; sessionId: string }>());
 
   // Fetch runtime config (launch flags) once on mount
   useEffect(() => {
@@ -580,9 +593,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     dispatch({ type: 'UPDATE_CELL', notebookId, cellId, updates: { isExecuting: true, error: null } });
 
+    const queryId = newQueryId();
+    const runningKey = `${notebookId}:${cellId}`;
+    runningQueries.current.set(runningKey, { queryId, sessionId: server.sessionId });
+
     try {
       api.setSessionId(server.sessionId);
-      const result = await api.query(cell.sql, DEFAULT_PAGE_SIZE, 0);
+      const result = await api.query(cell.sql, DEFAULT_PAGE_SIZE, 0, queryId);
       const cellResult: CellResult = {
         columns: result.columns,
         rows: result.rows,
@@ -600,8 +617,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
         error: e instanceof Error ? e.message : 'Query failed',
         isExecuting: false,
       }});
+    } finally {
+      if (runningQueries.current.get(runningKey)?.queryId === queryId) {
+        runningQueries.current.delete(runningKey);
+      }
     }
   }, [state.notebooks, state.servers]);
+
+  const cancelCell = useCallback(async (notebookId: string, cellId: string) => {
+    const running = runningQueries.current.get(`${notebookId}:${cellId}`);
+    if (!running) return;
+    try {
+      api.setSessionId(running.sessionId);
+      await api.cancelQuery(running.queryId);
+    } catch (e) {
+      // The statement's own request reports the outcome; a failed cancel
+      // just means it keeps running (e.g. the session is gone).
+      console.warn('Cancel request failed:', e instanceof Error ? e.message : e);
+    }
+  }, []);
 
   const fetchCellPage = useCallback(async (notebookId: string, cellId: string, page: number) => {
     const notebook = state.notebooks.find(n => n.id === notebookId);
@@ -613,10 +647,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     dispatch({ type: 'UPDATE_CELL', notebookId, cellId, updates: { isExecuting: true, error: null } });
 
+    const queryId = newQueryId();
+    const runningKey = `${notebookId}:${cellId}`;
+    runningQueries.current.set(runningKey, { queryId, sessionId: server.sessionId });
+
     try {
       api.setSessionId(server.sessionId);
       const offset = (page - 1) * cell.result.pageSize;
-      const result = await api.query(cell.result.originalSql, cell.result.pageSize, offset);
+      const result = await api.query(cell.result.originalSql, cell.result.pageSize, offset, queryId);
       const cellResult: CellResult = {
         columns: result.columns,
         rows: result.rows,
@@ -634,6 +672,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         error: e instanceof Error ? e.message : 'Failed to fetch page',
         isExecuting: false,
       }});
+    } finally {
+      if (runningQueries.current.get(runningKey)?.queryId === queryId) {
+        runningQueries.current.delete(runningKey);
+      }
     }
   }, [state.notebooks, state.servers]);
 
@@ -678,6 +720,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     updateCellSql,
     updateCellServer,
     executeCell,
+    cancelCell,
     fetchCellPage,
     getServerCatalogs,
     getServerSchemas,

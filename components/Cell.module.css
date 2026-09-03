@@ -41,6 +41,10 @@
   min-width: 80px;
 }
 
+.stopBtn {
+  color: var(--error-color);
+}
+
 .cellStats {
   font-size: 12px;
   color: var(--text-muted);

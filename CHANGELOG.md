@@ -5,6 +5,36 @@ All notable changes to GizmoSQL UI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.7.0] - 2026-09-03
+
+### Added
+- **Stop button for running statements.** Each cell shows a `■ Stop` button
+  while its statement runs. Stopping a SELECT interrupts it on the server
+  (GizmoSQL >= 1.38.0 turns the Flight SQL cancel into a DuckDB interrupt),
+  and the connection stays usable for the next statement. A running
+  DDL/DML statement cannot be interrupted through the ADBC driver manager,
+  so stopping one only abandons the wait — the UI says so, and the
+  statement may still complete. New `POST /api/query/cancel` route
+  (`{ sessionId, queryId }`); `POST /api/query` accepts an optional
+  client-generated `queryId`.
+
+### Fixed
+- **The Query Timeout setting now actually stops the query.** Previously it
+  only raced the client-side wait against a timer: the UI reported a
+  timeout while the statement kept running on the server, and — because
+  statements are serialized per connection — every later statement from
+  that session waited behind it. The timeout is now applied server-side
+  (`SET gizmosql.query_timeout` on connect, which also bounds DDL/DML) and
+  as an `AbortSignal` deadline on each statement, so the server interrupts
+  the query and the session is immediately usable again.
+
+### Changed
+- Bumped `@gizmodata/gizmosql-client` to ^2.2.0 (`execute()` accepts an
+  `AbortSignal`, `QueryCancelledError`, bundled `gizmosql-adbc` driver
+  v2.0.12). Verified live against GizmoSQL v1.38.1: SELECT cancel and
+  timeout interrupt the server within ~10 ms of the abort, DML cancel
+  completes on the server, `SET gizmosql.query_timeout` bounds both.
+
 ## [2.6.4] - 2026-09-02
 
 ### Fixed

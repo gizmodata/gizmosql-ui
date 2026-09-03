@@ -119,13 +119,26 @@ class ApiClient {
     }
   }
 
-  async query(sql: string, limit?: number, offset?: number): Promise<QueryResult> {
+  async query(sql: string, limit?: number, offset?: number, queryId?: string): Promise<QueryResult> {
     return this.request<QueryResult>('POST', '/query', {
       sessionId: this.sessionId,
       sql,
       limit,
       offset,
+      queryId,
     });
+  }
+
+  /**
+   * Stop a running statement started by query() with the same queryId.
+   * Resolves to whether the statement was still running when the cancel arrived.
+   */
+  async cancelQuery(queryId: string): Promise<boolean> {
+    const response = await this.request<{ cancelled: boolean }>('POST', '/query/cancel', {
+      sessionId: this.sessionId,
+      queryId,
+    });
+    return response.cancelled;
   }
 
   async getCatalogs(): Promise<string[]> {

@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@gizmodata/gizmosql-client':
-        specifier: ^2.1.0
-        version: 2.1.0
+        specifier: ^2.2.0
+        version: 2.2.0
       '@monaco-editor/react':
         specifier: ^4.7.0
         version: 4.7.0(monaco-editor@0.55.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -368,8 +368,8 @@ packages:
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@gizmodata/gizmosql-client@2.1.0':
-    resolution: {integrity: sha512-qM15aP1rFgVGK1wm5ZJrheayMsmsiO51Mt42WvK7zxnVnyoBAUbh4cwOmsgOOhWRIvrHO6AmItIvAJpqacGWVg==}
+  '@gizmodata/gizmosql-client@2.2.0':
+    resolution: {integrity: sha512-9R5UHeb3DVOoqm75o/Mmu6UmiU/n/UDGiTOVkaraCCMEaJD6snJnpLaHIl23/eZaIV4G8czm0OO0X/DwnJyAcw==}
     engines: {node: '>=22.0.0'}
 
   '@humanfs/core@0.19.1':
@@ -2262,7 +2262,7 @@ snapshots:
       '@eslint/core': 0.17.0
       levn: 0.4.1
 
-  '@gizmodata/gizmosql-client@2.1.0':
+  '@gizmodata/gizmosql-client@2.2.0':
     dependencies:
       '@apache-arrow/adbc-driver-manager': 0.24.0(apache-arrow@21.2.0)
       apache-arrow: 21.2.0

@@ -196,6 +196,7 @@ gizmosql-ui/
 | /api/connect | POST | Connect to GizmoSQL server |
 | /api/disconnect | POST | Disconnect from server |
 | /api/query | POST | Execute SQL query |
+| /api/query/cancel | POST | Stop a running statement (by the `queryId` given to /api/query) |
 | /api/catalogs | GET | List catalogs |
 | /api/schemas | GET | List schemas |
 | /api/tables | GET | List tables |

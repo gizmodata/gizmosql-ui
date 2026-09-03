@@ -1,5 +1,27 @@
-import { FlightSQLClient } from '@gizmodata/gizmosql-client';
+import { FlightSQLClient, QueryCancelledError } from '@gizmodata/gizmosql-client';
 import { InstrumentationInfo } from '@/lib/types';
+
+/**
+ * Thrown by GizmoSQLService.execute() when a statement was stopped before
+ * it produced a result — either by cancelQuery() (`timedOut: false`) or by
+ * the connection's query timeout (`timedOut: true`).
+ */
+export class QueryAbortedError extends Error {
+  constructor(message: string, public readonly timedOut: boolean) {
+    super(message);
+    this.name = 'QueryAbortedError';
+  }
+}
+
+export interface ExecuteOptions {
+  /** Identifier a later cancelQuery() call can use to abort this statement. */
+  queryId?: string;
+}
+
+/** Marker used as the abort reason when the connection's query timeout fires. */
+class QueryTimeoutReason {
+  constructor(public readonly seconds: number) {}
+}
 
 export interface GizmoSQLConfig {
   host: string;
@@ -26,6 +48,8 @@ export class GizmoSQLService {
   private client: FlightSQLClient | null = null;
   private config: GizmoSQLConfig;
   private queryQueue: Promise<unknown> = Promise.resolve();
+  // In-flight (or still queued) statements that can be cancelled, by queryId
+  private activeQueries = new Map<string, AbortController>();
 
   constructor(config: GizmoSQLConfig) {
     this.config = config;
@@ -69,6 +93,43 @@ export class GizmoSQLService {
       console.error('GizmoSQL connection test error:', error);
       throw error instanceof Error ? error : new Error(String(error));
     }
+
+    // Bound statements on the server too. The client-side AbortSignal in
+    // execute() interrupts SELECTs, but an abort cannot reach a running
+    // DDL/DML statement through the ADBC driver manager — the server-side
+    // session timeout covers those. Older servers may not know the setting.
+    const timeoutSeconds = this.timeoutSeconds();
+    if (timeoutSeconds > 0) {
+      try {
+        await this.client.execute(`SET gizmosql.query_timeout = ${timeoutSeconds}`);
+      } catch (error) {
+        console.warn(
+          `GizmoSQLService: server did not accept SET gizmosql.query_timeout (client-side timeout still applies):`,
+          error instanceof Error ? error.message : error
+        );
+      }
+    }
+  }
+
+  // Validated whole-second query timeout (0 = unlimited)
+  private timeoutSeconds(): number {
+    const raw = Number(this.config.queryTimeout);
+    return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 0;
+  }
+
+  /**
+   * Abort a statement started with execute({ queryId }). Returns false if no
+   * such statement is running or queued. Aborting a running SELECT interrupts
+   * it on the server (GizmoSQL >= 1.38.0); a running DDL/DML statement
+   * completes on the server, only the wait for it is abandoned.
+   */
+  cancelQuery(queryId: string): boolean {
+    const controller = this.activeQueries.get(queryId);
+    if (!controller) {
+      return false;
+    }
+    controller.abort(new Error('Query cancelled by user'));
+    return true;
   }
 
   async close(): Promise<void> {
@@ -79,27 +140,44 @@ export class GizmoSQLService {
     }
   }
 
-  async execute(sql: string): Promise<QueryResult> {
+  async execute(sql: string, options: ExecuteOptions = {}): Promise<QueryResult> {
     if (!this.client) {
       throw new Error('Not connected to GizmoSQL server');
     }
 
-    return this.queueQuery(async () => {
+    // Register the controller before queueing so a cancel that arrives while
+    // the statement is still waiting behind another one is not lost.
+    const controller = new AbortController();
+    const { queryId } = options;
+    if (queryId) {
+      this.activeQueries.set(queryId, controller);
+    }
+
+    const run = async (): Promise<QueryResult> => {
       const startTime = Date.now();
-      const timeoutMs = this.config.queryTimeout ? this.config.queryTimeout * 1000 : 0;
+      const timeoutSeconds = this.timeoutSeconds();
+      const timer = timeoutSeconds > 0
+        ? setTimeout(() => controller.abort(new QueryTimeoutReason(timeoutSeconds)), timeoutSeconds * 1000)
+        : undefined;
 
-      // Create the query promise
-      const queryPromise = this.client!.execute(sql);
-
-      // If timeout is set (> 0), race against timeout
       let table;
-      if (timeoutMs > 0) {
-        const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error(`Query timeout: exceeded ${this.config.queryTimeout} seconds`)), timeoutMs);
-        });
-        table = await Promise.race([queryPromise, timeoutPromise]);
-      } else {
-        table = await queryPromise;
+      try {
+        if (controller.signal.aborted) {
+          // Cancelled while queued — never reached the server
+          throw new QueryCancelledError('Query cancelled', controller.signal.reason);
+        }
+        table = await this.client!.execute(sql, undefined, { signal: controller.signal });
+      } catch (error) {
+        if (error instanceof QueryCancelledError) {
+          const reason = error.reason ?? controller.signal.reason;
+          if (reason instanceof QueryTimeoutReason) {
+            throw new QueryAbortedError(`Query timeout: exceeded ${reason.seconds} seconds`, true);
+          }
+          throw new QueryAbortedError('Query cancelled', false);
+        }
+        throw error;
+      } finally {
+        if (timer) clearTimeout(timer);
       }
 
       const executionTimeMs = Date.now() - startTime;
@@ -125,7 +203,15 @@ export class GizmoSQLService {
         rowCount: rows.length,
         executionTimeMs,
       };
-    });
+    };
+
+    try {
+      return await this.queueQuery(run);
+    } finally {
+      if (queryId && this.activeQueries.get(queryId) === controller) {
+        this.activeQueries.delete(queryId);
+      }
+    }
   }
 
   async getCatalogs(): Promise<string[]> {

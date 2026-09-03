@@ -25,7 +25,7 @@ interface CellProps {
 }
 
 export function Cell({ notebookId, cell, isActive, onActivate, onAddCellBelow, onRequestConnection }: CellProps) {
-  const { state, enableTpch, updateCellSql, updateCellServer, executeCell, removeCell, fetchCellPage } = useApp();
+  const { state, enableTpch, updateCellSql, updateCellServer, executeCell, cancelCell, removeCell, fetchCellPage } = useApp();
   const editorRef = useRef<unknown>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [showServerSelect, setShowServerSelect] = useState(false);
@@ -219,6 +219,18 @@ export function Cell({ notebookId, cell, isActive, onActivate, onAddCellBelow, o
               <>▶ Run</>
             )}
           </button>
+          {cell.isExecuting && (
+            <button
+              className={`btn btn-secondary btn-sm ${styles.stopBtn}`}
+              title="Stop the running statement"
+              onClick={e => {
+                e.stopPropagation();
+                cancelCell(notebookId, cell.id);
+              }}
+            >
+              ■ Stop
+            </button>
+          )}
           {cell.result && (
             <span className={styles.cellStats}>
               {cell.result.rowCount} row{cell.result.rowCount !== 1 ? 's' : ''} • {cell.result.executionTimeMs}ms
