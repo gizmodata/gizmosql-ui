@@ -5,6 +5,15 @@ All notable changes to GizmoSQL UI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.7.1] - 2026-09-09
+
+### Changed
+- Requires `@gizmodata/gizmosql-client` >= 2.2.1, which bundles gizmosql-adbc
+  v2.0.13: parameterized DDL/DML (`INSERT`/`UPDATE`/`DELETE` with bound
+  parameters) now executes immediately instead of running lazily on the
+  server, where it could be silently lost or interrupted by the client's own
+  cancel when the next statement started.
+
 ## [2.7.0] - 2026-09-03
 
 ### Added
