@@ -35,3 +35,6 @@ pnpm-debug.log*
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# npm lockfile: this repo uses pnpm (pnpm-lock.yaml); CI installs with a frozen pnpm lockfile
+package-lock.json
