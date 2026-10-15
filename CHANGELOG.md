@@ -5,6 +5,14 @@ All notable changes to GizmoSQL UI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.7.3] - 2026-10-15
+
+### Changed
+- Requires `@gizmodata/gizmosql-client` >= 2.2.3, which bundles gizmosql-adbc
+  v2.0.15: its Linux library is built for glibc 2.17 (was 2.34), so the app
+  runs on older Linux distributions (RHEL / Oracle Linux 7 and 8, Debian 10/11,
+  Ubuntu 20.04). Built with Go 1.26.9.
+
 ## [2.7.2] - 2026-09-30
 
 ### Changed
